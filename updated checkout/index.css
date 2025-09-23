@@ -1,0 +1,6 @@
+html,body,#root{height:100%;}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+
+/* small utility classes used by the component if Tailwind not present */
+.bg-neutral-950{background:#071017}
+.text-neutral-100{color:#eef2ff}
