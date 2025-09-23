@@ -16,6 +16,7 @@ const STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DC","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","MA","MD","ME","MI","MN","MO","MS","MT","NC","ND","NE","NH","NJ","NM","NV","NY","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VA","VT","WA","WI","WV"
 ];
 
+
 export default function Checkout() {
   // ---- Cart & totals ----
   const [cart, setCart] = useState(DEMO_CART);
@@ -87,6 +88,11 @@ export default function Checkout() {
 
   const updateCard = (e) => {
     const { name, type, checked, value } = e.target;
+    if (name === 'number') {
+      const digits = (value || '').replace(/\D/g, '');
+      setCard((c) => ({ ...c, number: digits }));
+      return;
+    }
     setCard((c) => ({ ...c, [name]: type === "checkbox" ? checked : value }));
   };
 
@@ -107,8 +113,8 @@ export default function Checkout() {
     if (cart.length === 0 || subtotal <= 0) return "Your cart is empty.";
 
     // Payment (very light client validation; use real gateway on backend)
-    const digits = (card.number || "").replace(/\s|-/g, "");
-    if (!/^\d{13,19}$/.test(digits)) return "Enter a valid card number (no spaces).";
+  const digits = (card.number || "").replace(/\s|-/g, "");
+  if (!/^\d{13,19}$/.test(digits)) return "Enter a valid card number (no spaces).";
     if (!card.nameOnCard.trim()) return "Enter the name on card.";
     if (!/^\d{2}\/\d{2}$/.test(card.exp)) return "Expiry must be MM/YY.";
     if (!/^\d{3,4}$/.test(card.cvc)) return "Enter a valid CVC.";
@@ -128,7 +134,11 @@ export default function Checkout() {
       shippingMethod: shipping.id,
       costs: { subtotal: round2(subtotal), taxes, shipping: shippingCost, total },
       shipping: ship,
-      payment: { last4: (card.number || "").slice(-4), brand: guessBrand(card.number) },
+      payment: {
+  masked: maskCardNumber(card.number),
+  last4: (card.number || "").slice(-4),
+  brand: guessBrand(card.number),
+      },
       createdAt: new Date().toISOString(),
       source: "checkout-frontend",
     };
@@ -138,10 +148,14 @@ export default function Checkout() {
     if (res.ok) {
       setStatus({ type: "ok", msg: "Order placed! A confirmation email is on the way." });
       // Reset cart for demo
-      setCart([]);
+  setCart([]);
+  // Clear raw card number from state
+  setCard((c) => ({ ...c, number: "", rawNumber: "" }));
     } else {
       setStatus({ type: "ok", msg: "Saved locally (offline/mock). You can sync when backend is ready." });
-      setCart([]);
+  setCart([]);
+  // Clear raw card number from state even when saved offline
+  setCard((c) => ({ ...c, number: "", rawNumber: "" }));
     }
     setPlacing(false);
   };
@@ -209,7 +223,7 @@ export default function Checkout() {
               <h2 style={{fontSize:20, fontWeight:600, marginBottom:8}}>Payment</h2>
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}}>
                 <Field label="Card number">
-                  <input name="number" value={card.number} onChange={updateCard} className="inp" inputMode="numeric" placeholder="4242424242424242" />
+                  <input name="number" value={formatCardNumber(card.number)} onChange={updateCard} className="inp" inputMode="numeric" placeholder="4242 4242 4242 4242" />
                 </Field>
                 <Field label="Name on card">
                   <input name="nameOnCard" value={card.nameOnCard} onChange={updateCard} className="inp" />
@@ -221,10 +235,18 @@ export default function Checkout() {
                   <input name="cvc" value={card.cvc} onChange={updateCard} className="inp" inputMode="numeric" placeholder="123" />
                 </Field>
               </div>
+              <div style={{marginTop:8, color:'#cbd5e1', fontSize:13}}>
+                {card.number ? (
+                  <span>Card number preview: <strong>{maskCardNumber(card.number)}</strong></span>
+                ) : (
+                  <span>Card number preview: <em>no card entered</em></span>
+                )}
+              </div>
               <label style={{display:'flex', alignItems:'center', gap:8, marginTop:12}}>
                 <input type="checkbox" name="saveCard" checked={card.saveCard} onChange={updateCard} />
                 <span>Save card for faster checkout</span>
               </label>
+              
             </Card>
 
             <Card>
@@ -321,6 +343,16 @@ function fmt(n) {
 
 function round2(n) {
   return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+function formatCardNumber(raw) {
+  const n = (raw || "").replace(/\D/g, "");
+  return n.replace(/(.{4})/g, "$1 ").trim();
+}
+function maskCardNumber(cardNumber) {
+  const n = (cardNumber || "").replace(/\D/g, "");
+  if (n.length <= 4) return n;
+  const masked = n.slice(0, -4).replace(/./g, "•");
+  return `${masked}${n.slice(-4)}`;
 }
 
 function guessBrand(num) {
