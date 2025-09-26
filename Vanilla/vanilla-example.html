@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanilla JS Checkout</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0f1c;
+            color: white;
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .checkout-form {
+            background: #1a2332;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #374151;
+            background: #111827;
+            color: white;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+        .result {
+            background: #1a2332;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .success { border-left: 4px solid #10b981; }
+        .error { border-left: 4px solid #ef4444; }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ Vanilla JS Checkout</h1>
+        
+        <form id="checkoutForm" class="checkout-form">
+            <h3>Customer Information</h3>
+            <input type="text" id="firstName" placeholder="First Name" required>
+            <input type="text" id="lastName" placeholder="Last Name" required>
+            <input type="email" id="email" placeholder="Email Address" required>
+            
+            <h3>💳 Payment Information</h3>
+            <input type="text" id="cardNumber" placeholder="Card Number (4111111111111111)" required>
+            <input type="text" id="expiryMonth" placeholder="MM" required>
+            <input type="text" id="expiryYear" placeholder="YYYY" required>
+            <input type="text" id="cvc" placeholder="CVC" required>
+            
+            <button type="submit" id="submitBtn">💳 Complete Order ($80.57)</button>
+        </form>
+
+        <div id="loading" class="loading">
+            <p>🔄 Processing order...</p>
+        </div>
+
+        <div id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Pure vanilla JavaScript - no React!
+        document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            // Show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = '🔄 Processing...';
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            
+            try {
+                // Get form data
+                const orderData = {
+                    customerInfo: {
+                        firstName: document.getElementById('firstName').value,
+                        lastName: document.getElementById('lastName').value,
+                        email: document.getElementById('email').value,
+                        address: '123 Main St',
+                        city: 'City',
+                        state: 'State',
+                        zipCode: '12345'
+                    },
+                    cardDetails: {
+                        card_number: document.getElementById('cardNumber').value,
+                        expiry_month: document.getElementById('expiryMonth').value,
+                        expiry_year: document.getElementById('expiryYear').value,
+                        cvv: document.getElementById('cvc').value
+                    },
+                    orderAmount: 80.57,
+                    items: [
+                        { name: 'Team Tee', price: 24.99, quantity: 2, total: 49.98 },
+                        { name: 'Logo Hat', price: 19.99, quantity: 1, total: 19.99 }
+                    ]
+                };
+
+                // Call SAME Node.js API
+                const response = await fetch('http://localhost:3001/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData),
+                });
+
+                const data = await response.json();
+                
+                // Display result
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                
+                if (response.ok && data.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <h3>✅ Order Successful!</h3>
+                        <p><strong>Order ID:</strong> ${data.orderId}</p>
+                        <p><strong>Amount:</strong> $${data.amount}</p>
+                        <p><strong>Authorization:</strong> ${data.authorizationToken.substring(0, 20)}...</p>
+                    `;
+                    document.getElementById('checkoutForm').reset();
+                } else {
+                    throw new Error(data.error || 'Order failed');
+                }
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h3>❌ Order Failed</h3>
+                    <p>${error.message}</p>
+                    <p>Make sure the backend server is running on localhost:3001</p>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💳 Complete Order ($80.57)';
+            }
+        });
+    </script>
+</body>
+</html>
