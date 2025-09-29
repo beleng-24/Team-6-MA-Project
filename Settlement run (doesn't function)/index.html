@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Settlement - Checkout Warehouse</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Settlement</h1>
+      <p class="subtitle">Checkout / Warehouse settlement interface</p>
+    </header>
+
+    <section class="panel layout">
+      <div class="left">
+        <form id="settlement-form" class="card">
+          <h2>Settlement Details</h2>
+
+          <label>Warehouse</label>
+          <select id="warehouse" required>
+            <option value="W1">Warehouse 1</option>
+            <option value="W2">Warehouse 2</option>
+          </select>
+
+          <label>Settlement Date</label>
+          <input type="date" id="settlementDate" required />
+
+          <label>Reference</label>
+          <input type="text" id="reference" placeholder="e.g. INV-2025-001" />
+
+          <label>Notes</label>
+          <textarea id="notes" rows="3" placeholder="Optional notes..."></textarea>
+
+          <div class="actions">
+            <button type="button" id="addItemBtn" class="btn ghost">Add Item</button>
+            <button type="submit" class="btn primary">Settle</button>
+          </div>
+        </form>
+
+        <div id="items-card" class="card items-card">
+          <h2>Items</h2>
+          <table id="itemsTable">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Line Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- items go here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <aside class="right card summary">
+        <h2>Summary</h2>
+        <div class="summary-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+        <div class="summary-row"><span>Tax (10%)</span><span id="tax">$0.00</span></div>
+        <div class="summary-row total"><span>Total</span><span id="total">$0.00</span></div>
+
+        <div class="divider"></div>
+
+        <div class="payment-methods">
+          <label>Payment Method</label>
+          <select id="paymentMethod">
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="bank">Bank Transfer</option>
+          </select>
+
+          <label>Amount Paid</label>
+          <input type="number" id="amountPaid" min="0" step="0.01" value="0" />
+
+          <div class="summary-row"><span>Change</span><span id="change">$0.00</span></div>
+        </div>
+
+        <div class="actions vertical">
+          <button id="previewBtn" class="btn ghost">Preview</button>
+          <button id="exportBtn" class="btn">Export CSV</button>
+        </div>
+      </aside>
+    </section>
+
+    <template id="item-row-tpl">
+      <tr>
+        <td><input class="sku" placeholder="SKU" /></td>
+        <td><input class="desc" placeholder="Description" /></td>
+        <td><input class="qty" type="number" min="0" step="1" value="1" /></td>
+        <td><input class="price" type="number" min="0" step="0.01" value="0.00" /></td>
+        <td class="line">$0.00</td>
+        <td><button class="btn small danger remove">Remove</button></td>
+      </tr>
+    </template>
+
+    <div id="previewModal" class="modal hidden">
+      <div class="modal-content">
+        <header>
+          <h3>Settlement Preview</h3>
+        </header>
+        <div id="previewBody"></div>
+        <footer>
+          <button id="closePreview" class="btn">Close</button>
+        </footer>
+      </div>
+    </div>
+
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>
