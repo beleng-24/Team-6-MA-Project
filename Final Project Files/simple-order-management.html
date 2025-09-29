@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Order Management</h1>
+        
+        <!-- Search Section -->
+        <div class="section">
+            <h2>Search Orders</h2>
+            <input type="text" id="searchInput" placeholder="Search by Order ID or Customer Name">
+            <button class="btn" onclick="searchOrders()">Search</button>
+        </div>
+        
+        <!-- Orders Table -->
+        <div class="section">
+            <h2>Orders</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <!-- Orders will be loaded here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script src="order-management.js"></script>
+</body>
+</html>
