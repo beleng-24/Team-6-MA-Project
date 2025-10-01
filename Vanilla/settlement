@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settlement Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 350px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+    button {
+      width: 48%;
+      padding: 10px;
+      border: none;
+      background: #0077cc;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    .btn-reset {
+      background: #888;
+    }
+    .btn-reset:hover {
+      background: #555;
+    }
+    .message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+    .error {
+      background: #ffdddd;
+      color: #a70000;
+    }
+    .success {
+      background: #ddffdd;
+      color: #006600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Settle Order</h2>
+    <form id="settlementForm">
+      <label for="orderId">Order ID:</label>
+      <input type="text" id="orderId" required>
+
+      <label for="finalAmount">Final Amount:</label>
+      <input type="number" id="finalAmount" step="0.01" required>
+
+      <div class="buttons">
+        <button type="submit">Submit</button>
+        <button type="button" class="btn-reset" id="resetBtn">Reset</button>
+      </div>
+    </form>
+    <div id="message" class="message"></div>
+  </div>
+
+  <script>
+    // Example "orders database"
+    const orders = {
+      "1001": { authorizedAmount: 250.75, settled: false },
+      "1002": { authorizedAmount: 500.00, settled: false },
+      "1003": { authorizedAmount: 120.40, settled: false }
+    };
+
+    const form = document.getElementById("settlementForm");
+    const messageBox = document.getElementById("message");
+    const resetBtn = document.getElementById("resetBtn");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const orderId = document.getElementById("orderId").value.trim();
+      const finalAmount = parseFloat(document.getElementById("finalAmount").value);
+
+      if (!orders[orderId]) {
+        showMessage("Order not found.", "error");
+        return;
+      }
+
+      const authorizedAmount = orders[orderId].authorizedAmount;
+
+      if (finalAmount > authorizedAmount) {
+        showMessage("Error: Final amount exceeds authorized amount.", "error");
+      } else if (finalAmount <= 0 || isNaN(finalAmount)) {
+        showMessage("Error: Enter a valid positive amount.", "error");
+      } else {
+        showMessage("Success: Order settled successfully.", "success");
+        orders[orderId].settled = true;
+      }
+    });
+
+    resetBtn.addEventListener("click", function() {
+      form.reset();
+      messageBox.style.display = "none";
+    });
+
+    function showMessage(text, type) {
+      messageBox.textContent = text;
+      messageBox.className = "message " + type;
+      messageBox.style.display = "block";
+    }
+  </script>
+</body>
+</html>
