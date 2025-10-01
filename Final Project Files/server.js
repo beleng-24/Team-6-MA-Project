@@ -32,8 +32,17 @@ db.connect((err) => {
 
 // API Endpoints
 
+// Test endpoint
+app.get('/api/test', (req, res) => {
+    console.log('✅ Test endpoint hit!');
+    res.json({ success: true, message: 'Server is working!' });
+});
+
 // 1. Save Customer and Order Data (from Vanilla Checkout)
 app.post('/api/save-order', async (req, res) => {
+    console.log('📥 Received save-order request');
+    console.log('📋 Request body:', req.body);
+    
     const {
         // Customer data
         firstName, lastName, address, city, state, zip, email,
@@ -42,6 +51,12 @@ app.post('/api/save-order', async (req, res) => {
         // Authorization data (from API response)
         authorizationToken, authorizedAmount, authorizationDate
     } = req.body;
+
+    console.log('🔍 Extracted data:', {
+        firstName, lastName, address, city, state, zip, email,
+        orderId, subtotal, tax, total,
+        authorizationToken, authorizedAmount, authorizationDate
+    });
 
     try {
         // Start transaction
@@ -62,11 +77,12 @@ app.post('/api/save-order', async (req, res) => {
             [orderId, customerId, subtotal, tax, total]
         );
 
-        // 3. Insert Authorization
+        // 3. Insert Authorization with unique token handling
+        const uniqueAuthToken = authorizationToken + '_' + Date.now(); // Make token unique
         await db.promise().query(
-            `INSERT INTO Authorization (AuthorizationToken, OrderID, AuthorizedAmount, AuthorizationStatus, AuthorizationDate, ExpirationDate) 
-             VALUES (?, ?, ?, 'authorized', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY))`,
-            [authorizationToken, orderId, authorizedAmount]
+            `INSERT INTO Authorization (AuthorizationToken, OrderID, AuthorizedAmount, AuthorizationCode, AuthorizationStatus, AuthorizationDate, ExpirationDate) 
+             VALUES (?, ?, ?, ?, 'authorized', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY))`,
+            [uniqueAuthToken, orderId, authorizedAmount, authorizationToken.substring(0, 20)]
         );
 
         // Commit transaction
@@ -83,15 +99,20 @@ app.post('/api/save-order', async (req, res) => {
         // Rollback on error
         await db.promise().rollback();
         console.error('❌ Error saving order:', error);
+        console.error('❌ Error details:', error.message);
+        console.error('❌ SQL Error Code:', error.code);
+        console.error('❌ Request body:', req.body);
         res.status(500).json({ 
             success: false, 
-            error: 'Failed to save order data' 
+            error: 'Failed to save order data',
+            details: error.message
         });
     }
 });
 
 // 2. Get Orders for Order Management Page
 app.get('/api/orders', async (req, res) => {
+    console.log('📋 Orders endpoint requested');
     try {
         const [orders] = await db.promise().query(`
             SELECT 
@@ -105,6 +126,7 @@ app.get('/api/orders', async (req, res) => {
             ORDER BY o.CreatedAt DESC
         `);
 
+        console.log('✅ Found', orders.length, 'orders');
         res.json({ success: true, orders: orders });
     } catch (error) {
         console.error('❌ Error fetching orders:', error);
@@ -115,6 +137,7 @@ app.get('/api/orders', async (req, res) => {
 // 3. Get Order for Settlement Validation
 app.get('/api/order/:orderId', async (req, res) => {
     const { orderId } = req.params;
+    console.log('🔍 Order lookup request for:', orderId);
     
     try {
         const [result] = await db.promise().query(`
@@ -130,10 +153,14 @@ app.get('/api/order/:orderId', async (req, res) => {
             WHERE o.OrderID = ?
         `, [orderId]);
 
+        console.log('📋 Query result:', result);
+
         if (result.length === 0) {
+            console.log('❌ Order not found:', orderId);
             return res.status(404).json({ success: false, error: 'Order not found' });
         }
 
+        console.log('✅ Order found:', result[0]);
         res.json({ success: true, order: result[0] });
     } catch (error) {
         console.error('❌ Error fetching order:', error);
@@ -144,25 +171,60 @@ app.get('/api/order/:orderId', async (req, res) => {
 // 4. Process Settlement
 app.post('/api/settle-order', async (req, res) => {
     const { orderId, finalAmount, settledBy } = req.body;
+    console.log('💰 Settlement request:', { orderId, finalAmount, settledBy });
 
     try {
-        // Insert settlement record
+        // Generate a random warehouse user for settlement
+        const warehouseUsers = ['WUSER001', 'WUSER002', 'WUSER003', 'WUSER004', 'WUSER005'];
+        const warehouseNames = [
+            'John Smith',
+            'Sarah Johnson',
+            'Mike Brown',
+            'Lisa Davis',
+            'Tom Wilson'
+        ];
+        
+        const randomIndex = Math.floor(Math.random() * warehouseUsers.length);
+        const randomUser = warehouseUsers[randomIndex];
+        const randomName = warehouseNames[randomIndex];
+        
+        console.log('👤 Generated warehouse user:', randomUser, '(' + randomName + ')');
+        
+        // Ensure the warehouse user exists (just UserName)
         await db.promise().query(`
+            INSERT IGNORE INTO Warehouse (UserName) 
+            VALUES (?)
+        `, [randomUser]);
+        
+        // Insert settlement record with random warehouse user
+        console.log('📝 Inserting settlement record...');
+        const settlementResult = await db.promise().query(`
             INSERT INTO Settlement (AuthorizationToken, OrderID, SettledAmount, SettledDate, SettledBy, SettlementStatus)
             SELECT a.AuthorizationToken, ?, ?, NOW(), ?, 'completed'
             FROM Authorization a 
             WHERE a.OrderID = ?
-        `, [orderId, finalAmount, settledBy || 'warehouse', orderId]);
+        `, [orderId, finalAmount, randomUser, orderId]);
+        
+        console.log('✅ Settlement record inserted:', settlementResult[0]);
 
         // Update order status
-        await db.promise().query(`
+        console.log('📝 Updating order status...');
+        const orderResult = await db.promise().query(`
             UPDATE \`Order\` SET OrderStatus = 'Settled' WHERE OrderID = ?
         `, [orderId]);
+        
+        console.log('✅ Order status updated:', orderResult[0]);
 
-        res.json({ success: true, message: 'Order settled successfully' });
+        res.json({ 
+            success: true, 
+            message: `Order settled successfully by ${randomName} (${randomUser})` 
+        });
     } catch (error) {
         console.error('❌ Error settling order:', error);
-        res.status(500).json({ success: false, error: 'Failed to settle order' });
+        console.error('❌ Error details:', error.message);
+        console.error('❌ SQL Error Code:', error.code);
+        console.error('❌ Settlement request data:', { orderId, finalAmount, settledBy });
+        res.status(500).json({ success: false, error: 'Failed to settle order', details: error.message });
     }
 });
 

@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Customer Checkout</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💳</text></svg>" />
   <style>
     :root {
       --bg:#0b1220; --panel:#0f1724; --muted:#94a3b8; --accent:#3b82f6; --success:#10b981; --danger:#ef4444;
@@ -385,6 +386,26 @@
       }
     }
 
+    // Save order data to database (silent background operation)
+    async function saveOrderToDatabase(orderData) {
+        try {
+            const response = await fetch('/api/save-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                console.log('✅ Order saved to database:', result.orderId);
+            } else {
+                console.error('❌ Failed to save to database:', result.error);
+            }
+        } catch (error) {
+            console.error('❌ Database save error:', error);
+        }
+    }
+
     function validateForm(){
       const ship = {
         firstName: document.getElementById("firstName").value.trim(),
@@ -500,12 +521,33 @@
         console.log('Success check result:', isSuccess);
         
         if (isSuccess) {
+            // Save to database (silent background operation)
+            saveOrderToDatabase({
+                // Customer data
+                firstName: document.getElementById("firstName").value.trim(),
+                lastName: document.getElementById("lastName").value.trim(),
+                address: document.getElementById("address1").value.trim(),
+                city: document.getElementById("city").value.trim(),
+                state: document.getElementById("state").value,
+                zip: document.getElementById("zip").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                // Order data
+                orderId: data.OrderId || orderId,
+                subtotal: subtotal,
+                tax: taxes,
+                total: total,
+                // Authorization data
+                authorizationToken: data.AuthorizationToken,
+                authorizedAmount: data.AuthorizedAmount || total,
+                authorizationDate: new Date().toISOString()
+            });
+            
             result.className = 'result success';
             result.innerHTML = `
                 <h3>✅ Payment Successful!</h3>
                 <p><strong>Order Confirmation:</strong> ${data.OrderId || orderId}</p>
                 <p><strong>Amount Charged:</strong> $${Number(data.AuthorizedAmount || total).toFixed(2)}</p>
-                <p>Thank you for your purchase!</p>
+                <p>Thank you for your purchase! You will receive an email confirmation shortly.</p>
             `;
             // Generate new random order for next use
             state.subtotal = generateRandomOrderAmount();

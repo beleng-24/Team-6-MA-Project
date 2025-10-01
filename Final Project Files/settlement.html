@@ -93,37 +93,80 @@
   </div>
 
   <script>
-    // Example "orders database"
-    const orders = {
-      "1001": { authorizedAmount: 250.75, settled: false },
-      "1002": { authorizedAmount: 500.00, settled: false },
-      "1003": { authorizedAmount: 120.40, settled: false }
-    };
-
     const form = document.getElementById("settlementForm");
     const messageBox = document.getElementById("message");
     const resetBtn = document.getElementById("resetBtn");
 
-    form.addEventListener("submit", function(e) {
+    form.addEventListener("submit", async function(e) {
       e.preventDefault();
 
       const orderId = document.getElementById("orderId").value.trim();
       const finalAmount = parseFloat(document.getElementById("finalAmount").value);
 
-      if (!orders[orderId]) {
-        showMessage("Order not found.", "error");
+      // Basic validation
+      if (!orderId || finalAmount <= 0 || isNaN(finalAmount)) {
+        showMessage("Error: Please enter valid Order ID and amount.", "error");
         return;
       }
 
-      const authorizedAmount = orders[orderId].authorizedAmount;
+      // Show processing message
+      showMessage("Processing settlement...", "success");
 
-      if (finalAmount > authorizedAmount) {
-        showMessage("Error: Final amount exceeds authorized amount.", "error");
-      } else if (finalAmount <= 0 || isNaN(finalAmount)) {
-        showMessage("Error: Enter a valid positive amount.", "error");
-      } else {
-        showMessage("Success: Order settled successfully.", "success");
-        orders[orderId].settled = true;
+      try {
+        // Step 1: Look up the order in the database
+        console.log('🔍 Looking up order:', orderId);
+        const orderResponse = await fetch(`http://localhost:3000/api/order/${orderId}`);
+        const orderData = await orderResponse.json();
+        
+        if (!orderData.success) {
+          showMessage(`Order ${orderId} not found. Please check the Order ID.`, "error");
+          return;
+        }
+        
+        const order = orderData.order;
+        console.log('📋 Order found:', order);
+        
+        // Step 2: Check if already settled
+        if (order.settled) {
+          showMessage(`Order ${orderId} has already been settled.`, "error");
+          return;
+        }
+        
+        // Step 3: Validate settlement amount against authorized amount
+        const authorizedAmount = parseFloat(order.AuthorizedAmount);
+        const maxAllowedAmount = authorizedAmount * 1.15; // Allow 15% overage for shipping/handling
+        
+        if (finalAmount > maxAllowedAmount) {
+          showMessage(`Error: Settlement amount ($${finalAmount.toFixed(2)}) exceeds authorized amount ($${authorizedAmount.toFixed(2)}) plus 15% allowance ($${maxAllowedAmount.toFixed(2)}).`, "error");
+          return;
+        }
+        
+        // Step 4: Process the settlement
+        console.log('💰 Processing settlement...');
+        const settlementResponse = await fetch('http://localhost:3000/api/settle-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            orderId: orderId,
+            finalAmount: finalAmount,
+            settledBy: 'warehouse'
+          })
+        });
+        
+        const settlementData = await settlementResponse.json();
+        
+        if (settlementData.success) {
+          showMessage(`✅ Settlement processed successfully!\nOrder: ${orderId}\nAuthorized: $${authorizedAmount.toFixed(2)}\nSettled: $${finalAmount.toFixed(2)}`, "success");
+          form.reset();
+        } else {
+          showMessage(`Failed to process settlement: ${settlementData.error}`, "error");
+        }
+        
+      } catch (error) {
+        console.error('❌ Settlement error:', error);
+        showMessage('Connection error. Please make sure the server is running and try again.', "error");
       }
     });
 
