@@ -21,8 +21,6 @@
     .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:var(--accent);color:white;border:0;cursor:pointer}
     .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
     .muted{color:var(--muted);font-size:13px}
-    .cart-item{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
-    .cart-item .meta{max-width:68%}
     .totals{font-size:14px}
     .totals .line{display:flex;justify-content:space-between;padding:6px 0}
     .brand-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:13px}
@@ -106,7 +104,6 @@
 
           <div class="controls">
             <button id="placeBtn" class="btn" type="submit">Pay <span id="totalBtn">$0.00</span></button>
-            <button id="backBtn" type="button" class="btn secondary">Continue shopping</button>
           </div>
 
           <div id="loading" style="display:none;margin-top:12px;color:var(--muted)">Processing order…</div>
@@ -118,7 +115,7 @@
       <aside>
         <div class="panel">
           <h3>Order Summary</h3>
-          <div id="cartList"></div>
+      
           <div class="totals" style="margin-top:8px">
             <div class="line"><div>Subtotal</div><div id="subtotal">$0.00</div></div>
             <div class="line"><div>Taxes (7%)</div><div id="taxes">$0.00</div></div>
@@ -136,11 +133,17 @@
   </div>
 
   <script>
-    // Demo data and constants
-    const DEMO_CART = [
-      { id: "sku-tee", name: "Team Tee", price: 24.99, qty: 2 },
-      { id: "sku-hat", name: "Logo Hat", price: 19.99, qty: 1 },
-    ];
+    // Generate random order amounts
+    function generateRandomOrderAmount() {
+      const min = 25.00;
+      const max = 300.00;
+      return round2(Math.random() * (max - min) + min);
+    }
+
+    function generateRandomShipping() {
+      const shippingOptions = [5.00, 14.00, 29.00];
+      return shippingOptions[Math.floor(Math.random() * shippingOptions.length)];
+    }
 
     const SHIPPING = [
       { id: "standard", label: "Standard (5–7 days)", cost: 5.0 },
@@ -218,7 +221,7 @@
 
     // App state
     const state = {
-      cart: JSON.parse(JSON.stringify(DEMO_CART)),
+      subtotal: 0,
       shippingId: "standard",
       taxRate: 0.07,
       shippingMethods: SHIPPING,
@@ -231,7 +234,6 @@
     // DOM refs
     const shippingOptionsEl = document.getElementById("shippingOptions");
     const stateSelect = document.getElementById("state");
-    const cartListEl = document.getElementById("cartList");
     const subtotalEl = document.getElementById("subtotal");
     const taxesEl = document.getElementById("taxes");
     const shippingCostEl = document.getElementById("shippingCost");
@@ -240,8 +242,8 @@
     const cardNumberInput = document.getElementById("cardNumber");
     const maskedPreviewEl = document.getElementById("maskedPreview");
     const brandBadgeEl = document.getElementById("brandBadge");
-  const placeBtn = document.getElementById("placeBtn");
-  const statusEl = document.getElementById("status");
+    const placeBtn = document.getElementById("placeBtn");
+    const statusEl = document.getElementById("status");
 
     // Initialize selects and shipping radios
     (function init(){
@@ -266,46 +268,16 @@
         shippingOptionsEl.appendChild(wrap);
       });
 
-      renderCart();
+      // Generate initial random pricing
+      state.subtotal = generateRandomOrderAmount();
       renderTotals();
       attachEvents();
     })();
 
-    function renderCart(){
-      cartListEl.innerHTML = "";
-      state.cart.forEach(item=>{
-        const li = document.createElement("div"); li.className="cart-item";
-        const meta = document.createElement("div"); meta.className="meta";
-        const title = document.createElement("div"); title.style.fontWeight=600; title.textContent=item.name;
-        const price = document.createElement("div"); price.className="muted"; price.textContent = fmt(item.price) + " each";
-        const qtyRow = document.createElement("div"); qtyRow.style.marginTop="8px"; qtyRow.style.display="flex"; qtyRow.style.gap="8px"; qtyRow.style.alignItems="center";
-        const qtyLabel = document.createElement("div"); qtyLabel.className="muted"; qtyLabel.textContent="Qty";
-        const qtyInput = document.createElement("input"); qtyInput.type="text"; qtyInput.value = item.qty; qtyInput.style.width="64px"; qtyInput.addEventListener("input", (e)=>{
-          item.qty = Math.max(0, parseInt(e.target.value||0));
-          renderCart(); renderTotals();
-        });
-        const removeBtn = document.createElement("button"); removeBtn.className="btn secondary"; removeBtn.style.padding="6px 8px"; removeBtn.textContent="Remove"; removeBtn.addEventListener("click", ()=>{
-          state.cart = state.cart.filter(i=>i.id!==item.id); renderCart(); renderTotals();
-        });
-        qtyRow.appendChild(qtyLabel); qtyRow.appendChild(qtyInput); qtyRow.appendChild(removeBtn);
-
-        meta.appendChild(title); meta.appendChild(price); meta.appendChild(qtyRow);
-
-        const right = document.createElement("div"); right.style.textAlign="right"; right.style.fontWeight=600; right.textContent = fmt(item.price * item.qty);
-
-        li.appendChild(meta); li.appendChild(right);
-        cartListEl.appendChild(li);
-      });
-
-      if (state.cart.length===0){
-        cartListEl.innerHTML = '<div class="muted">Your cart is empty.</div>';
-      }
-    }
-
-    function calcSubtotal(){ return round2(state.cart.reduce((s,i)=>s + i.price * i.qty, 0)); }
     function currentShippingCost(){ const m = SHIPPING.find(x=>x.id===state.shippingId); return m ? m.cost : 0; }
+    
     function renderTotals(){
-      const subtotal = calcSubtotal();
+      const subtotal = state.subtotal;
       const taxes = round2(subtotal * state.taxRate);
       const shippingCost = currentShippingCost();
       const total = round2(subtotal + taxes + shippingCost);
@@ -400,8 +372,6 @@
       document.getElementById("zip").addEventListener("input",(e)=>{ e.target.value = e.target.value.replace(/[^\d\-]/g,"").slice(0,10); });
 
       document.getElementById("checkoutForm").addEventListener("submit", placeOrder);
-
-      document.getElementById("backBtn").addEventListener("click", ()=>{ window.history.back(); });
     }
 
     function updateCardPreview(){
@@ -434,7 +404,7 @@
       if (!/^\d{2}\/\d{2}$/.test(document.getElementById("exp").value)) return "Expiry must be MM/YY.";
       if (!/^\d{3,4}$/.test(document.getElementById("cvc").value)) return "Enter a valid CVC.";
       if (!document.getElementById("agree").checked) return "Please agree to terms & refund policy.";
-      if (state.cart.length === 0 || calcSubtotal() <= 0) return "Your cart is empty.";
+      if (state.subtotal <= 0) return "Invalid order amount.";
       return null;
     }
 
@@ -445,31 +415,24 @@
       if (err) { setStatus({type:'err',msg:err}); return; }
 
       setPlacing(true);
-      const subtotal = calcSubtotal();
+      const subtotal = state.subtotal;
       const taxes = round2(subtotal * state.taxRate);
       const shippingCost = currentShippingCost();
       const total = round2(subtotal + taxes + shippingCost);
 
-      const orderData = {
-        cart: state.cart.filter(i=>i.qty>0),
-        shippingMethod: state.shippingId,
-        costs: { subtotal: round2(subtotal), taxes, shipping: shippingCost, total },
-        shipping: {
-          firstName: document.getElementById("firstName").value,
-          lastName: document.getElementById("lastName").value,
-          address1: document.getElementById("address1").value,
-          city: document.getElementById("city").value,
-          state: document.getElementById("state").value,
-          zip: document.getElementById("zip").value,
-          email: document.getElementById("email").value
+      // Generate Order ID
+      const orderId = 'ORD' + Date.now() + Math.floor(Math.random() * 1000);
+
+      // Transform data to match beeceptor API format
+      const authorizationData = {
+        "OrderId": orderId,
+        "CardDetails": {
+          "CardNumber": state.card.number.replace(/\D/g, ''), // Remove non-digits
+          "CardMonth": document.getElementById("exp").value.split('/')[0], // Extract month
+          "CardYear": "20" + document.getElementById("exp").value.split('/')[1], // Extract year with century
+          "CCV": document.getElementById("cvc").value
         },
-        payment: {
-          masked: maskCardNumber(state.card.number),
-          last4: (state.card.number || "").slice(-4),
-          brand: guessBrand(state.card.number)
-        },
-        createdAt: new Date().toISOString(),
-        source: "checkout-vanilla"
+        "RequestedAmount": total
       };
 
       const loading = document.getElementById('loading');
@@ -482,37 +445,105 @@
         submitBtn.disabled = true;
         submitBtn.textContent = 'Processing…';
 
-        // Call SAME Node.js API
-        const response = await fetch('http://localhost:3001/api/orders', {
+        // Debug: Log what we're sending
+        console.log('Sending to API:', authorizationData);
+
+        // Call beeceptor authorization API
+        const response = await fetch('https://capstoneproject.free.beeceptor.com/authorize', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(orderData),
+            body: JSON.stringify(authorizationData),
         });
 
-        const data = await response.json();
+        // Debug: Log response details
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+
+        let data = null;
+        
+        // Handle 500 errors (which may not have valid JSON)
+        if (response.status >= 500) {
+          console.log('Server error detected');
+          data = { error: 'Server temporarily unavailable', status: 'ERROR' };
+        } else {
+          try {
+            data = await response.json();
+          } catch (jsonError) {
+            console.log('JSON parse error:', jsonError);
+            data = { error: 'Invalid response format', status: 'ERROR' };
+          }
+        }
+        
+        console.log('Response data:', data);
+        console.log('Data keys:', Object.keys(data || {}));
+        console.log('Data.status:', data?.status);
+        console.log('Data.success:', data?.success);
+        console.log('Full response:', JSON.stringify(data, null, 2));
         
         // Display result
         loading.style.display = 'none';
         result.style.display = 'block';
         
-        if (response.ok && data.success) {
+        // Check for success in multiple possible formats
+        const isSuccess = response.ok && (
+          data.Success === true ||  // Beeceptor format (capital S)
+          data.status === 'SUCCESS' || 
+          data.status === 'success' ||
+          data.success === true ||
+          data.result === 'success' ||
+          data.approved === true ||
+          (response.status === 200 && !data.error && !data.failure && data.Reason === "")
+        );
+        
+        console.log('Success check result:', isSuccess);
+        
+        if (isSuccess) {
             result.className = 'result success';
             result.innerHTML = `
-                <h3>✅ Order Successful!</h3>
-                <p><strong>Order ID:</strong> ${data.orderId}</p>
-                <p><strong>Amount:</strong> $${Number(data.amount).toFixed(2)}</p>
-                <p><strong>Authorization:</strong> ${String(data.authorizationToken || '').substring(0, 20)}...</p>
+                <h3>✅ Payment Successful!</h3>
+                <p><strong>Order Confirmation:</strong> ${data.OrderId || orderId}</p>
+                <p><strong>Amount Charged:</strong> $${Number(data.AuthorizedAmount || total).toFixed(2)}</p>
+                <p>Thank you for your purchase!</p>
             `;
-            // clear and reset demo state
-            state.cart = [];
-            renderCart(); renderTotals();
+            // Generate new random order for next use
+            state.subtotal = generateRandomOrderAmount();
+            renderTotals();
             document.getElementById('checkoutForm').reset();
             state.card.number = '';
             updateCardPreview();
         } else {
-            throw new Error(data.error || 'Order failed');
+            // Handle different failure scenarios
+            let errorMessage = 'Payment authorization failed';
+            
+            if (response.status >= 500 || (data.status === 'ERROR' && data.error && data.error.includes('Server'))) {
+                errorMessage = 'Payment service temporarily unavailable. Please try again later.';
+            } else if (data.Success === false && data.Reason) {
+                // Beeceptor failure format
+                if (data.Reason.toLowerCase().includes('insufficient')) {
+                    errorMessage = 'Payment failed: Insufficient funds. Please try a different card.';
+                } else if (data.Reason.toLowerCase().includes('incorrect') || data.Reason.toLowerCase().includes('invalid')) {
+                    errorMessage = 'Payment failed: Incorrect card details. Please verify your information.';
+                } else {
+                    errorMessage = `Payment failed: ${data.Reason}`;
+                }
+            } else if (data.error && data.error.includes('Insufficient')) {
+                errorMessage = 'Payment failed: Insufficient funds. Please try a different card.';
+            } else if (data.error && data.error.includes('Incorrect')) {
+                errorMessage = 'Payment failed: Incorrect card details. Please verify your information.';
+            } else if (data.error) {
+                errorMessage = `Payment failed: ${data.error}`;
+            } else if (data.message) {
+                errorMessage = `Payment failed: ${data.message}`;
+            }
+            
+            result.className = 'result error';
+            result.innerHTML = `
+                <h3>❌ Payment Failed</h3>
+                <p>${errorMessage}</p>
+                <p>Please try again or contact customer service if the problem persists.</p>
+            `;
         }
         
       } catch (error) {
@@ -520,9 +551,9 @@
         result.style.display = 'block';
         result.className = 'result error';
         result.innerHTML = `
-            <h3>❌ Order Failed</h3>
-            <p>${error.message}</p>
-            <p>Make sure the backend server is running on localhost:3001</p>
+            <h3>❌ Payment Failed</h3>
+            <p>We're having trouble processing your payment right now.</p>
+            <p>Please check your internet connection and try again.</p>
         `;
       } finally {
         submitBtn.disabled = false;
