@@ -9,35 +9,33 @@
 <body>
     <div class="container">
         <h1>Order Management</h1>
-        
-        <!-- Search Section -->
-        <div class="section">
-            <h2>Search Orders</h2>
-            <input type="text" id="searchInput" placeholder="Search by Order ID or Customer Name">
-            <button class="btn" onclick="searchOrders()">Search</button>
-        </div>
-        
-        <!-- Orders Table -->
-        <div class="section">
-            <h2>Orders</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersTableBody">
-                    <!-- Orders will be loaded here by JavaScript -->
-                </tbody>
-            </table>
-        </div>
+
+<!-- Controls Section -->
+<div class="controls-section">
+    <h2 class="controls-title">Filter and Sort Orders</h2>
+    <div class="controls">
+        <input type="text" id="filterInput" placeholder="Search by ID or Customer">
+        <select id="statusFilter">
+            <option value="all">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Completed">Completed</option>
+        </select>
+        <select id="sortSelect">
+            <option value="dateDesc">Date: Newest First</option>
+            <option value="dateAsc">Date: Oldest First</option>
+            <option value="amountDesc">Amount: High → Low</option>
+            <option value="amountAsc">Amount: Low → High</option>
+            <option value="customerAsc">Customer: A → Z</option>
+            <option value="customerDesc">Customer: Z → A</option>
+        </select>
     </div>
-    
+</div>
+
+<!-- Order List -->
+<ul id="orderList"></ul>
+    </div>
+
     <script src="order-management.js"></script>
 </body>
 </html>

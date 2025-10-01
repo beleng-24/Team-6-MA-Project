@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Order Management</h1>
+
+        <!-- Controls -->
+        <div class="controls">
+            <input type="text" id="filterInput" placeholder="Search by ID or Customer">
+            <select id="statusFilter">
+                <option value="all">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Completed">Completed</option>
+            </select>
+            <select id="sortSelect">
+                <option value="dateDesc">Date: Newest First</option>
+                <option value="dateAsc">Date: Oldest First</option>
+                <option value="amountDesc">Amount: High → Low</option>
+                <option value="amountAsc">Amount: Low → High</option>
+                <option value="customerAsc">Customer: A → Z</option>
+                <option value="customerDesc">Customer: Z → A</option>
+            </select>
+        </div>
+
+        <!-- Order List -->
+        <ul id="orderList"></ul>
+    </div>
+
+    <script src="order-management.js"></script>
+</body>
+</html>
