@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Customer Checkout</title>
+  <style>
+    :root {
+      --bg:#0b1220; --panel:#0f1724; --muted:#94a3b8; --accent:#3b82f6; --success:#10b981; --danger:#ef4444;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#e6eef8;}
+    .wrap{max-width:980px;margin:28px auto;padding:20px}
+    h1{margin:0 0 18px;font-size:20px}
+    .grid{display:grid;gap:16px;grid-template-columns:1fr 360px}
+    .panel{background:var(--panel);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type="text"], input[type="email"], select {width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:#0b1017;color:#e6eef8;box-sizing:border-box}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
+    .small{width:80px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:var(--accent);color:white;border:0;cursor:pointer}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .muted{color:var(--muted);font-size:13px}
+    .cart-item{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+    .cart-item .meta{max-width:68%}
+    .totals{font-size:14px}
+    .totals .line{display:flex;justify-content:space-between;padding:6px 0}
+    .brand-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:13px}
+    .preview{margin-top:8px;color:var(--muted);font-size:13px}
+    .status{padding:12px;border-radius:10px;margin-top:12px}
+    .status.success{background:rgba(16,185,129,0.08);border-left:4px solid var(--success);color:#a7f3d0}
+    .status.error{background:rgba(239,68,68,0.08);border-left:4px solid var(--danger);color:#fecaca}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    .link{color:var(--accent);cursor:pointer;text-decoration:underline;font-size:13px}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    @media (max-width:880px){ .grid{grid-template-columns:1fr} .small{width:64px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Customer Checkout</h1>
+
+    <div class="grid">
+      <div>
+        <form id="checkoutForm" class="panel" autocomplete="off">
+          <h3>Shipping Details</h3>
+          <div class="row">
+            <div>
+              <label for="firstName">First name</label>
+              <input id="firstName" type="text" required />
+            </div>
+            <div>
+              <label for="lastName">Last name</label>
+              <input id="lastName" type="text" required />
+            </div>
+          </div>
+
+          <label for="address1">Address</label>
+          <input id="address1" type="text" placeholder="123 Main St" required />
+
+          <div class="row" style="margin-top:8px">
+            <div>
+              <label for="city">City</label>
+              <input id="city" type="text" required />
+            </div>
+            <div>
+              <label for="state">State</label>
+              <select id="state"></select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div>
+              <label for="zip">ZIP</label>
+              <input id="zip" type="text" inputmode="numeric" required />
+            </div>
+            <div>
+              <label for="email">Email</label>
+              <input id="email" type="email" required />
+            </div>
+          </div>
+
+          <h3 style="margin-top:16px">Delivery</h3>
+          <div id="shippingOptions"></div>
+
+          <h3 style="margin-top:16px">Payment</h3>
+          <label for="cardNumber">Card number</label>
+          <input id="cardNumber" type="text" inputmode="numeric" placeholder="4242 4242 4242 4242" autocomplete="cc-number" required />
+          <div class="preview">
+            <span id="brandBadge" class="brand-badge" style="display:none"></span>
+            <div id="maskedPreview" style="margin-top:8px"></div>
+          </div>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-top:8px" class="muted">
+            <input id="maskToggle" type="checkbox" /> Mask as I type
+          </label>
+
+          <div style="margin-top:8px" class="row">
+            <input id="exp" placeholder="MM/YY" />
+            <input id="cvc" class="small" placeholder="CVC" inputmode="numeric" />
+          </div>
+
+          <label style="margin-top:12px" class="muted">
+            <input id="agree" type="checkbox" /> I agree to the Terms of Service & Refund Policy
+          </label>
+
+          <div class="controls">
+            <button id="placeBtn" class="btn" type="submit">Pay <span id="totalBtn">$0.00</span></button>
+            <button id="backBtn" type="button" class="btn secondary">Continue shopping</button>
+          </div>
+
+          <div id="loading" style="display:none;margin-top:12px;color:var(--muted)">Processing order…</div>
+          <div id="result" style="display:none;margin-top:12px" class="result"></div>
+          <div id="status" style="display:none" class="status"></div>
+        </form>
+      </div>
+
+      <aside>
+        <div class="panel">
+          <h3>Order Summary</h3>
+          <div id="cartList"></div>
+          <div class="totals" style="margin-top:8px">
+            <div class="line"><div>Subtotal</div><div id="subtotal">$0.00</div></div>
+            <div class="line"><div>Taxes (7%)</div><div id="taxes">$0.00</div></div>
+            <div class="line"><div>Shipping</div><div id="shippingCost">$0.00</div></div>
+            <div style="height:1px;background:rgba(255,255,255,0.03);margin:8px 0"></div>
+            <div class="line" style="font-weight:600"><div>Total</div><div id="total">$0.00</div></div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+      </aside>
+    </div>
+
+    <footer>Demo only — do not use this for PCI-sensitive flows in production. Use tokenization (Stripe/Stripe Elements/etc.).</footer>
+  </div>
+
+  <script>
+    // Demo data and constants
+    const DEMO_CART = [
+      { id: "sku-tee", name: "Team Tee", price: 24.99, qty: 2 },
+      { id: "sku-hat", name: "Logo Hat", price: 19.99, qty: 1 },
+    ];
+
+    const SHIPPING = [
+      { id: "standard", label: "Standard (5–7 days)", cost: 5.0 },
+      { id: "express", label: "Express (2–3 days)", cost: 14.0 },
+      { id: "overnight", label: "Overnight (1 day)", cost: 29.0 },
+    ];
+
+    const STATES = ["AL","AK","AZ","AR","CA","CO","CT","DC","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","MA","MD","ME","MI","MN","MO","MS","MT","NC","ND","NE","NH","NJ","NM","NV","NY","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VA","VT","WA","WI","WV"];
+
+    // Utils
+    function fmt(n){ return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(Number(n||0)); }
+    function round2(n){ return Math.round((n+Number.EPSILON)*100)/100; }
+
+    function guessBrand(num){
+      const n = (num||"").replace(/\D/g,"");
+      if (/^4\d{12,18}$/.test(n)) return "Visa";
+      if (/^5[1-5]\d{14}$/.test(n)) return "Mastercard";
+      if (/^3[47]\d{13}$/.test(n)) return "AmEx";
+      if (/^6(?:011|5)\d{12,15}$/.test(n)) return "Discover";
+      return "Card";
+    }
+
+    function maskCardNumber(cardNumber){
+      const n = (cardNumber||"").replace(/\D/g,"");
+      if (n.length <= 4) return n;
+      const masked = n.slice(0,-4).replace(/./g,"•");
+      return formatCardNumber(masked + n.slice(-4));
+    }
+
+    function formatCardNumber(digitsRaw){
+      const n = (digitsRaw||"").replace(/\D/g,"");
+      const brand = guessBrand(n);
+      if (brand === "AmEx") {
+        // 4-6-5 grouping
+        return (n.slice(0,4) + (n.length>4 ? " " + n.slice(4,10):"") + (n.length>10 ? " " + n.slice(10,15) : "")).trim();
+      }
+      // default groups of 4
+      return n.replace(/(.{4})/g,"$1 ").trim();
+    }
+
+    // Format a string that may contain dots (•) and digits into spaced groups
+    function formatMaskedString(s){
+      // remove existing spaces
+      const raw = (s||"").replace(/\s+/g,"");
+      // decide grouping by brand using digits-only
+      const onlyDigits = raw.replace(/•/g,'').replace(/\D/g,'');
+      const brand = guessBrand(onlyDigits);
+      const groups = brand === 'AmEx' ? [4,6,5] : [4,4,4,4,3];
+      const parts = [];
+      let idx = 0;
+      for (let g of groups){
+        if (idx >= raw.length) break;
+        parts.push(raw.slice(idx, idx+g));
+        idx += g;
+      }
+      if (idx < raw.length) parts.push(raw.slice(idx));
+      return parts.join(' ').trim();
+    }
+
+    // Safe POST (no offline queue)
+    async function safePost(url, payload){
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("Bad status");
+        return { ok:true, status: res.status, body: await res.json().catch(()=>null) };
+      } catch (err) {
+        // Offline queue removed: do not persist locally. Return error for caller to handle.
+        return { ok:false, error: err.message };
+      }
+    }
+
+    // App state
+    const state = {
+      cart: JSON.parse(JSON.stringify(DEMO_CART)),
+      shippingId: "standard",
+      taxRate: 0.07,
+      shippingMethods: SHIPPING,
+      ship: { firstName:"", lastName:"", address1:"", city:"", state:"GA", zip:"", email:"", phone:"" },
+      card: { number:"", nameOnCard:"", exp:"", cvc:"" },
+      placing:false,
+      status:null
+    };
+
+    // DOM refs
+    const shippingOptionsEl = document.getElementById("shippingOptions");
+    const stateSelect = document.getElementById("state");
+    const cartListEl = document.getElementById("cartList");
+    const subtotalEl = document.getElementById("subtotal");
+    const taxesEl = document.getElementById("taxes");
+    const shippingCostEl = document.getElementById("shippingCost");
+    const totalEl = document.getElementById("total");
+    const totalBtnEl = document.getElementById("totalBtn");
+    const cardNumberInput = document.getElementById("cardNumber");
+    const maskedPreviewEl = document.getElementById("maskedPreview");
+    const brandBadgeEl = document.getElementById("brandBadge");
+  const placeBtn = document.getElementById("placeBtn");
+  const statusEl = document.getElementById("status");
+
+    // Initialize selects and shipping radios
+    (function init(){
+      STATES.forEach(s => {
+        const opt = document.createElement("option"); opt.value = s; opt.textContent = s;
+        stateSelect.appendChild(opt);
+      });
+
+      SHIPPING.forEach((m) => {
+        const id = "ship-" + m.id;
+        const wrap = document.createElement("label");
+        wrap.style.display = "flex"; wrap.style.justifyContent = "space-between"; wrap.style.padding = "8px"; wrap.style.borderRadius = "8px";
+        wrap.style.cursor = "pointer"; wrap.style.marginBottom = "6px"; wrap.style.border = "1px solid rgba(255,255,255,0.03)";
+        const left = document.createElement("div"); left.style.display="flex"; left.style.alignItems="center"; left.style.gap="8px";
+        const radio = document.createElement("input"); radio.type="radio"; radio.name="shipping"; radio.value=m.id; radio.style.marginRight="6px";
+        if (m.id === state.shippingId) radio.checked = true;
+        radio.addEventListener("change", ()=>{ state.shippingId = m.id; renderTotals(); });
+        left.appendChild(radio);
+        left.appendChild(document.createTextNode(m.label));
+        const cost = document.createElement("div"); cost.textContent = fmt(m.cost);
+        wrap.appendChild(left); wrap.appendChild(cost);
+        shippingOptionsEl.appendChild(wrap);
+      });
+
+      renderCart();
+      renderTotals();
+      attachEvents();
+    })();
+
+    function renderCart(){
+      cartListEl.innerHTML = "";
+      state.cart.forEach(item=>{
+        const li = document.createElement("div"); li.className="cart-item";
+        const meta = document.createElement("div"); meta.className="meta";
+        const title = document.createElement("div"); title.style.fontWeight=600; title.textContent=item.name;
+        const price = document.createElement("div"); price.className="muted"; price.textContent = fmt(item.price) + " each";
+        const qtyRow = document.createElement("div"); qtyRow.style.marginTop="8px"; qtyRow.style.display="flex"; qtyRow.style.gap="8px"; qtyRow.style.alignItems="center";
+        const qtyLabel = document.createElement("div"); qtyLabel.className="muted"; qtyLabel.textContent="Qty";
+        const qtyInput = document.createElement("input"); qtyInput.type="text"; qtyInput.value = item.qty; qtyInput.style.width="64px"; qtyInput.addEventListener("input", (e)=>{
+          item.qty = Math.max(0, parseInt(e.target.value||0));
+          renderCart(); renderTotals();
+        });
+        const removeBtn = document.createElement("button"); removeBtn.className="btn secondary"; removeBtn.style.padding="6px 8px"; removeBtn.textContent="Remove"; removeBtn.addEventListener("click", ()=>{
+          state.cart = state.cart.filter(i=>i.id!==item.id); renderCart(); renderTotals();
+        });
+        qtyRow.appendChild(qtyLabel); qtyRow.appendChild(qtyInput); qtyRow.appendChild(removeBtn);
+
+        meta.appendChild(title); meta.appendChild(price); meta.appendChild(qtyRow);
+
+        const right = document.createElement("div"); right.style.textAlign="right"; right.style.fontWeight=600; right.textContent = fmt(item.price * item.qty);
+
+        li.appendChild(meta); li.appendChild(right);
+        cartListEl.appendChild(li);
+      });
+
+      if (state.cart.length===0){
+        cartListEl.innerHTML = '<div class="muted">Your cart is empty.</div>';
+      }
+    }
+
+    function calcSubtotal(){ return round2(state.cart.reduce((s,i)=>s + i.price * i.qty, 0)); }
+    function currentShippingCost(){ const m = SHIPPING.find(x=>x.id===state.shippingId); return m ? m.cost : 0; }
+    function renderTotals(){
+      const subtotal = calcSubtotal();
+      const taxes = round2(subtotal * state.taxRate);
+      const shippingCost = currentShippingCost();
+      const total = round2(subtotal + taxes + shippingCost);
+      subtotalEl.textContent = fmt(subtotal);
+      taxesEl.textContent = fmt(taxes);
+      shippingCostEl.textContent = fmt(shippingCost);
+      totalEl.textContent = fmt(total);
+      totalBtnEl.textContent = fmt(total);
+    }
+
+    // Events & validation
+    function attachEvents(){
+      // format card input on each input, store digits-only
+      const maskToggle = document.getElementById('maskToggle');
+
+      function renderCardInput(){
+        const digits = state.card.number || '';
+        if (!maskToggle.checked){
+          cardNumberInput.value = formatCardNumber(digits);
+        } else {
+          if (!digits) cardNumberInput.value = '';
+          else if (digits.length <= 4) cardNumberInput.value = digits;
+          else {
+            const masked = '•'.repeat(Math.max(0, digits.length - 4)) + digits.slice(-4);
+            cardNumberInput.value = formatMaskedString(masked);
+          }
+        }
+      }
+
+      cardNumberInput.addEventListener("input", (e)=>{
+        // Only handle input events when mask is OFF. When mask is ON we manage digits via keydown/paste
+        if (maskToggle.checked) return;
+        // extract digits the user typed (ignore any non-digit characters)
+        const digits = (e.target.value || "").replace(/\D/g,"").slice(0,19);
+        state.card.number = digits;
+    // re-render according to toggle (will render formatted since mask is off)
+    renderCardInput();
+    // update preview and brand
+    updateCardPreview();
+        try { e.target.setSelectionRange(e.target.value.length, e.target.value.length); } catch (err) {}
+      });
+
+      // When mask toggle is ON we intercept key presses and paste to preserve underlying digits
+      cardNumberInput.addEventListener('keydown', (e)=>{
+        if (!maskToggle.checked) return; // only active in mask mode
+        const key = e.key;
+        // allow navigation keys
+        if (key === 'Tab' || key === 'ArrowLeft' || key === 'ArrowRight' || key === 'Home' || key === 'End') return;
+        if (/^\d$/.test(key)){
+          // append digit if under limit
+          if ((state.card.number||'').length < 19){
+            state.card.number = (state.card.number || '') + key;
+            renderCardInput();
+            updateCardPreview();
+          }
+          e.preventDefault();
+          return;
+        }
+        if (key === 'Backspace'){
+          // remove last digit
+          state.card.number = (state.card.number || '').slice(0, -1);
+          renderCardInput();
+          updateCardPreview();
+          e.preventDefault();
+          return;
+        }
+        // prevent other characters
+        e.preventDefault();
+      });
+
+      cardNumberInput.addEventListener('paste', (e)=>{
+        if (!maskToggle.checked) return; // normal paste allowed when mask off
+        const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+        const digits = text.replace(/\D/g,'').slice(0, 19 - (state.card.number||'').length);
+        if (digits.length){
+          state.card.number = (state.card.number || '') + digits;
+          renderCardInput();
+          updateCardPreview();
+        }
+        e.preventDefault();
+      });
+
+      maskToggle.addEventListener('change', ()=>{ renderCardInput(); try { cardNumberInput.focus(); cardNumberInput.setSelectionRange(cardNumberInput.value.length, cardNumberInput.value.length); } catch(e){} });
+
+      document.getElementById("exp").addEventListener("input", (e)=>{
+        // auto format MM/YY
+        let v = e.target.value.replace(/\D/g,"").slice(0,4);
+        if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+        e.target.value = v;
+      });
+
+      document.getElementById("zip").addEventListener("input",(e)=>{ e.target.value = e.target.value.replace(/[^\d\-]/g,"").slice(0,10); });
+
+      document.getElementById("checkoutForm").addEventListener("submit", placeOrder);
+
+      document.getElementById("backBtn").addEventListener("click", ()=>{ window.history.back(); });
+    }
+
+    function updateCardPreview(){
+      maskedPreviewEl.textContent = state.card.number ? "Card: " + maskCardNumber(state.card.number) : "";
+      const brand = state.card.number ? guessBrand(state.card.number) : null;
+      if (brand){
+        brandBadgeEl.style.display = "inline-flex";
+        brandBadgeEl.textContent = brand;
+      } else {
+        brandBadgeEl.style.display = "none";
+      }
+    }
+
+    function validateForm(){
+      const ship = {
+        firstName: document.getElementById("firstName").value.trim(),
+        lastName: document.getElementById("lastName").value.trim(),
+        address1: document.getElementById("address1").value.trim(),
+        city: document.getElementById("city").value.trim(),
+        state: document.getElementById("state").value,
+        zip: document.getElementById("zip").value.trim(),
+        email: document.getElementById("email").value.trim()
+      };
+      if (!ship.firstName || !ship.lastName) return "Enter your name.";
+      if (!ship.address1 || !ship.city || !ship.zip) return "Enter full shipping address.";
+      if (!/^[0-9]{5}(?:-[0-9]{4})?$/.test(ship.zip)) return "Enter a valid ZIP code.";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ship.email)) return "Enter a valid email.";
+      const digits = state.card.number || "";
+      if (!/^\d{13,19}$/.test(digits)) return "Enter a valid card number.";
+      if (!/^\d{2}\/\d{2}$/.test(document.getElementById("exp").value)) return "Expiry must be MM/YY.";
+      if (!/^\d{3,4}$/.test(document.getElementById("cvc").value)) return "Enter a valid CVC.";
+      if (!document.getElementById("agree").checked) return "Please agree to terms & refund policy.";
+      if (state.cart.length === 0 || calcSubtotal() <= 0) return "Your cart is empty.";
+      return null;
+    }
+
+    async function placeOrder(e){
+      e.preventDefault();
+      setStatus(null);
+      const err = validateForm();
+      if (err) { setStatus({type:'err',msg:err}); return; }
+
+      setPlacing(true);
+      const subtotal = calcSubtotal();
+      const taxes = round2(subtotal * state.taxRate);
+      const shippingCost = currentShippingCost();
+      const total = round2(subtotal + taxes + shippingCost);
+
+      const orderData = {
+        cart: state.cart.filter(i=>i.qty>0),
+        shippingMethod: state.shippingId,
+        costs: { subtotal: round2(subtotal), taxes, shipping: shippingCost, total },
+        shipping: {
+          firstName: document.getElementById("firstName").value,
+          lastName: document.getElementById("lastName").value,
+          address1: document.getElementById("address1").value,
+          city: document.getElementById("city").value,
+          state: document.getElementById("state").value,
+          zip: document.getElementById("zip").value,
+          email: document.getElementById("email").value
+        },
+        payment: {
+          masked: maskCardNumber(state.card.number),
+          last4: (state.card.number || "").slice(-4),
+          brand: guessBrand(state.card.number)
+        },
+        createdAt: new Date().toISOString(),
+        source: "checkout-vanilla"
+      };
+
+      const loading = document.getElementById('loading');
+      const result = document.getElementById('result');
+      const submitBtn = placeBtn;
+
+      try {
+        loading.style.display = 'block';
+        result.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing…';
+
+        // Call SAME Node.js API
+        const response = await fetch('http://localhost:3001/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData),
+        });
+
+        const data = await response.json();
+        
+        // Display result
+        loading.style.display = 'none';
+        result.style.display = 'block';
+        
+        if (response.ok && data.success) {
+            result.className = 'result success';
+            result.innerHTML = `
+                <h3>✅ Order Successful!</h3>
+                <p><strong>Order ID:</strong> ${data.orderId}</p>
+                <p><strong>Amount:</strong> $${Number(data.amount).toFixed(2)}</p>
+                <p><strong>Authorization:</strong> ${String(data.authorizationToken || '').substring(0, 20)}...</p>
+            `;
+            // clear and reset demo state
+            state.cart = [];
+            renderCart(); renderTotals();
+            document.getElementById('checkoutForm').reset();
+            state.card.number = '';
+            updateCardPreview();
+        } else {
+            throw new Error(data.error || 'Order failed');
+        }
+        
+      } catch (error) {
+        loading.style.display = 'none';
+        result.style.display = 'block';
+        result.className = 'result error';
+        result.innerHTML = `
+            <h3>❌ Order Failed</h3>
+            <p>${error.message}</p>
+            <p>Make sure the backend server is running on localhost:3001</p>
+        `;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Pay ' + fmt(total);
+        setPlacing(false);
+      }
+    }
+
+    function setPlacing(val){
+      state.placing = val;
+      placeBtn.disabled = !!val;
+      placeBtn.textContent = val ? "Placing order…" : "Pay " + document.getElementById("total").textContent;
+    }
+
+    function setStatus(s){
+      state.status = s;
+      if (!s){ statusEl.style.display="none"; statusEl.textContent=""; statusEl.className="status"; return; }
+      statusEl.style.display = "block";
+      statusEl.className = "status " + (s.type === "ok" ? "success" : "error");
+      statusEl.textContent = s.msg;
+    }
+
+    // initialize totals on load
+    renderTotals();
+    updateCardPreview();
+  </script>
+</body>
+</html>
