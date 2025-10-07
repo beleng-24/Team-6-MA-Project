@@ -45,7 +45,18 @@ function renderOrders(orderData) {
         const li = document.createElement("li");
         // Convert amount to number to ensure .toFixed() works
         const amount = Number(order.amount);
-        li.textContent = `${order.id} - ${order.customer} - $${amount.toFixed(2)} - ${order.status} - ${order.date}`;
+        
+        // Handle both old and new data formats
+        let paymentInfo;
+        if (order.cardType && order.last4 && order.cardType !== 'N/A' && order.last4 !== 'N/A') {
+            paymentInfo = `${order.cardType} ****${order.last4}`;
+        } else if (order.paymentMethod) {
+            paymentInfo = order.paymentMethod;
+        } else {
+            paymentInfo = 'No payment info';
+        }
+        
+        li.textContent = `${order.id} - ${order.customer} - $${amount.toFixed(2)} - ${paymentInfo} - ${order.status} - ${order.date}`;
         orderList.appendChild(li);
     });
 }

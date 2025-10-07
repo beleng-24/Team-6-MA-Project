@@ -49,7 +49,9 @@ app.post('/api/save-order', async (req, res) => {
         // Order data  
         orderId, subtotal, tax, total,
         // Authorization data (from API response)
-        authorizationToken, authorizedAmount, authorizationDate
+        authorizationToken, authorizedAmount, authorizationDate,
+        // Payment data
+        cardType, maskedCard, expirationMonth, expirationYear
     } = req.body;
 
     console.log('🔍 Extracted data:', {
@@ -77,11 +79,18 @@ app.post('/api/save-order', async (req, res) => {
             [orderId, customerId, subtotal, tax, total]
         );
 
-        // 3. Insert Authorization with unique token handling
+        // 3. Insert Payment record
+        await db.promise().query(
+            `INSERT INTO Payment (CardType, MaskedCard, ExpirationMonth, ExpirationYear, PaymentStatus, OrderID) 
+             VALUES (?, ?, ?, ?, 'Authorized', ?)`,
+            [cardType, maskedCard, expirationMonth, expirationYear, orderId]
+        );
+
+        // 4. Insert Authorization with unique token handling
         const uniqueAuthToken = authorizationToken + '_' + Date.now(); // Make token unique
         await db.promise().query(
-            `INSERT INTO Authorization (AuthorizationToken, OrderID, AuthorizedAmount, AuthorizationCode, AuthorizationStatus, AuthorizationDate, ExpirationDate) 
-             VALUES (?, ?, ?, ?, 'authorized', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY))`,
+            `INSERT INTO Authorization (AuthorizationToken, OrderID, AuthorizedAmount, AuthorizationCode, AuthorizationDate, ExpirationDate) 
+             VALUES (?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY))`,
             [uniqueAuthToken, orderId, authorizedAmount, authorizationToken.substring(0, 20)]
         );
 
@@ -119,10 +128,13 @@ app.get('/api/orders', async (req, res) => {
                 o.OrderID as id,
                 CONCAT(c.FirstName, ' ', c.LastName) as customer,
                 o.Total as amount,
-                o.OrderStatus as status,
+                COALESCE(p.PaymentStatus, o.OrderStatus) as status,
+                COALESCE(p.CardType, 'N/A') as cardType,
+                COALESCE(p.MaskedCard, 'N/A') as last4,
                 DATE_FORMAT(o.CreatedAt, '%Y-%m-%d') as date
             FROM \`Order\` o
             JOIN Customer c ON o.CustomerID = c.CustomerID
+            LEFT JOIN Payment p ON o.OrderID = p.OrderID
             ORDER BY o.CreatedAt DESC
         `);
 
@@ -145,7 +157,6 @@ app.get('/api/order/:orderId', async (req, res) => {
                 o.OrderID,
                 o.Total,
                 a.AuthorizedAmount,
-                a.AuthorizationStatus,
                 CASE WHEN s.SettlementID IS NOT NULL THEN true ELSE false END as settled
             FROM \`Order\` o
             JOIN Authorization a ON o.OrderID = a.OrderID
@@ -207,13 +218,13 @@ app.post('/api/settle-order', async (req, res) => {
         
         console.log('✅ Settlement record inserted:', settlementResult[0]);
 
-        // Update order status
-        console.log('📝 Updating order status...');
-        const orderResult = await db.promise().query(`
-            UPDATE \`Order\` SET OrderStatus = 'Settled' WHERE OrderID = ?
+        // Update payment status
+        console.log('📝 Updating payment status...');
+        const paymentResult = await db.promise().query(`
+            UPDATE Payment SET PaymentStatus = 'Settled' WHERE OrderID = ?
         `, [orderId]);
         
-        console.log('✅ Order status updated:', orderResult[0]);
+        console.log('✅ Payment status updated:', paymentResult[0]);
 
         res.json({ 
             success: true, 

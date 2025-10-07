@@ -539,7 +539,12 @@
                 // Authorization data
                 authorizationToken: data.AuthorizationToken,
                 authorizedAmount: data.AuthorizedAmount || total,
-                authorizationDate: new Date().toISOString()
+                authorizationDate: new Date().toISOString(),
+                // Payment/Card data
+                cardType: guessBrand(state.card.number),
+                maskedCard: state.card.number.slice(-4),
+                expirationMonth: parseInt(document.getElementById("exp").value.split('/')[0]),
+                expirationYear: parseInt("20" + document.getElementById("exp").value.split('/')[1])
             });
             
             result.className = 'result success';
