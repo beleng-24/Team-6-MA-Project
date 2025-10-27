@@ -1,9 +1,9 @@
-/* Dark Modern Theme */
+/* Deep Navy Dark Theme */
 body {
-    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     margin: 0;
     padding: 0;
-    background: #1e1e2f;
+    background: #0b1220;
     color: #e0e0e0;
 }
 
@@ -11,7 +11,7 @@ body {
     max-width: 900px;
     margin: 2rem auto;
     padding: 2rem;
-    background: #2a2a3d;
+    background: #111a2f;
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }
@@ -37,7 +37,7 @@ h1 {
 .controls-title {
     font-size: 1.2rem;
     margin-bottom: 0.8rem;
-    color: #aaa;
+    color: #a0a8c0;
     text-align: center;
 }
 
@@ -49,14 +49,14 @@ h1 {
     font-size: 1rem;
     flex: 1;
     min-width: 200px;
-    background: #3a3a4d;
+    background: #16223a;
     color: #e0e0e0;
     transition: all 0.2s ease-in-out;
 }
 
 .controls input:focus,
 .controls select:focus {
-    background: #4a4a63;
+    background: #1f3054;
     outline: none;
     box-shadow: 0 0 0 2px #007bff;
 }
@@ -72,16 +72,16 @@ h1 {
 
 #orderList li {
     padding: 1rem;
-    border-bottom: 1px solid #3d3d50;
+    border-bottom: 1px solid #1c2942;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #2f2f45;
+    background: #132036;
     transition: background 0.2s ease-in-out;
 }
 
 #orderList li:hover {
-    background: #3c3c57;
+    background: #1a2d4a;
 }
 
 #orderList li strong {
@@ -95,14 +95,14 @@ h1 {
 }
 
 #orderList li small {
-    color: #999;
+    color: #8892b0;
 }
 
 /* No results */
 .no-results {
     text-align: center;
     padding: 1rem;
-    color: #aaa;
-    background: #2f2f45;
+    color: #a0a8c0;
+    background: #132036;
     border-radius: 8px;
 }

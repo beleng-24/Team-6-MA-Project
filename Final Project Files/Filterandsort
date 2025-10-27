@@ -13,12 +13,12 @@
         <!-- Controls -->
         <div class="controls">
             <input type="text" id="filterInput" placeholder="Search by ID or Customer">
-            <select id="statusFilter">
-                <option value="all">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Completed">Completed</option>
-            </select>
+        <select id="statusFilter">
+    <option value="all">All Statuses</option>
+    <option value="Settled">Settled</option>
+    <option value="Authorized">Authorized</option>
+</select>
+
             <select id="sortSelect">
                 <option value="dateDesc">Date: Newest First</option>
                 <option value="dateAsc">Date: Oldest First</option>
