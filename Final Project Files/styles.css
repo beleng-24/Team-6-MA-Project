@@ -54,6 +54,22 @@ h1 {
     transition: all 0.2s ease-in-out;
 }
 
+.controls button {
+    padding: 0.7rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    min-width: 120px;
+    font-size: 1rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.controls button:hover {
+    background: #0056b3;
+}
+
 .controls input:focus,
 .controls select:focus {
     background: #1f3054;

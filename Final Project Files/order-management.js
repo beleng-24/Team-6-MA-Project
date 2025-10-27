@@ -1,12 +1,7 @@
 // order-management.js
 
-// Example initial data (replace with your own source or API calls)
-let orders = [
-  { id: "ORD201", customer: "Alice", amount: 75.25, status: "Authorized", date: "2025-10-03" },
-  { id: "ORD202", customer: "Bob", amount: 120.00, status: "Settled", date: "2025-10-04" },
-  { id: "ORD203", customer: "Charlie", amount: 88.50, status: "Authorized", date: "2025-10-05" }
-];
-
+// Orders data will be loaded from database
+let orders = [];
 
 // DOM references
 const orderList = document.getElementById("orderList");
@@ -23,7 +18,9 @@ function renderOrders(orderData) {
     }
     orderData.forEach(order => {
         const li = document.createElement("li");
-        li.textContent = `${order.id} - ${order.customer} - $${order.amount.toFixed(2)} - ${order.status} - ${order.date}`;
+        // Add card information if available
+        const cardInfo = order.cardType && order.last4 ? ` (${order.cardType} •••• ${order.last4})` : '';
+        li.textContent = `${order.id} - ${order.customer} - $${order.amount.toFixed(2)} - ${order.status} - ${order.date}${cardInfo}`;
         orderList.appendChild(li);
     });
 }
@@ -76,5 +73,37 @@ if (filterInput) filterInput.addEventListener("input", applyFiltersAndSorting);
 if (statusFilter) statusFilter.addEventListener("change", applyFiltersAndSorting);
 if (sortSelect) sortSelect.addEventListener("change", applyFiltersAndSorting);
 
-// Initial render
-applyFiltersAndSorting();
+// Fetch orders from database
+async function loadOrdersFromDatabase() {
+    try {
+        console.log('🔄 Loading orders from database...');
+        const response = await fetch('/api/orders');
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('📋 Raw order data from server:', data.orders);
+            // Transform the database format to match our UI format
+            orders = data.orders.map(order => ({
+                id: order.id,
+                customer: order.customer,
+                amount: parseFloat(order.amount),
+                status: order.status,
+                date: order.date,
+                cardType: order.cardType,
+                last4: order.last4
+            }));
+            console.log('✅ Loaded', orders.length, 'orders from database');
+            console.log('📋 Processed orders:', orders);
+            applyFiltersAndSorting(); // Re-render with new data
+        } else {
+            console.error('❌ Failed to load orders:', data.error);
+            orderList.innerHTML = "<li>Failed to load orders from database. Please check server connection.</li>";
+        }
+    } catch (error) {
+        console.error('❌ Error loading orders:', error);
+        orderList.innerHTML = "<li>Error connecting to server. Please make sure the server is running.</li>";
+    }
+}
+
+// Initial load from database
+loadOrdersFromDatabase();
