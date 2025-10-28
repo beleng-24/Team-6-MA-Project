@@ -5,35 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Customer Checkout</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💳</text></svg>" />
-  <style>
-    :root {
-      --bg:#0b1220; --panel:#0f1724; --muted:#94a3b8; --accent:#3b82f6; --success:#10b981; --danger:#ef4444;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#e6eef8;}
-    .wrap{max-width:980px;margin:28px auto;padding:20px}
-    h1{margin:0 0 18px;font-size:20px}
-    .grid{display:grid;gap:16px;grid-template-columns:1fr 360px}
-    .panel{background:var(--panel);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-    input[type="text"], input[type="email"], select {width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:#0b1017;color:#e6eef8;box-sizing:border-box}
-    .row{display:flex;gap:10px}
-    .row > *{flex:1}
-    .small{width:80px}
-    .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:var(--accent);color:white;border:0;cursor:pointer}
-    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
-    .muted{color:var(--muted);font-size:13px}
-    .totals{font-size:14px}
-    .totals .line{display:flex;justify-content:space-between;padding:6px 0}
-    .brand-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:13px}
-    .preview{margin-top:8px;color:var(--muted);font-size:13px}
-    .status{padding:12px;border-radius:10px;margin-top:12px}
-    .status.success{background:rgba(16,185,129,0.08);border-left:4px solid var(--success);color:#a7f3d0}
-    .status.error{background:rgba(239,68,68,0.08);border-left:4px solid var(--danger);color:#fecaca}
-    .controls{display:flex;gap:8px;margin-top:12px}
-    .link{color:var(--accent);cursor:pointer;text-decoration:underline;font-size:13px}
-    footer{margin-top:18px;color:var(--muted);font-size:13px}
-    @media (max-width:880px){ .grid{grid-template-columns:1fr} .small{width:64px} }
-  </style>
+  <link rel="stylesheet" href="universal-styles.css">
 </head>
 <body>
   <div class="wrap">
@@ -57,7 +29,7 @@
           <label for="address1">Address</label>
           <input id="address1" type="text" placeholder="123 Main St" required />
 
-          <div class="row" style="margin-top:8px">
+          <div class="row margin-top-8">
             <div>
               <label for="city">City</label>
               <input id="city" type="text" required />
@@ -68,7 +40,7 @@
             </div>
           </div>
 
-          <div class="row" style="margin-top:8px">
+          <div class="row margin-top-8">
             <div>
               <label for="zip">ZIP</label>
               <input id="zip" type="text" inputmode="numeric" required />
@@ -79,27 +51,27 @@
             </div>
           </div>
 
-          <h3 style="margin-top:16px">Delivery</h3>
+          <h3 class="margin-top-16">Delivery</h3>
           <div id="shippingOptions"></div>
 
-          <h3 style="margin-top:16px">Payment</h3>
+          <h3 class="margin-top-16">Payment</h3>
           <label for="cardNumber">Card number</label>
           <input id="cardNumber" type="text" inputmode="numeric" placeholder="4242 4242 4242 4242" autocomplete="cc-number" required />
           <div class="preview">
-            <span id="brandBadge" class="brand-badge" style="display:none"></span>
-            <div id="maskedPreview" style="margin-top:8px"></div>
+            <span id="brandBadge" class="brand-badge"></span>
+            <div id="maskedPreview"></div>
           </div>
 
-          <label style="display:flex;align-items:center;gap:8px;margin-top:8px" class="muted">
+          <label class="muted margin-top-8">
             <input id="maskToggle" type="checkbox" /> Mask as I type
           </label>
 
-          <div style="margin-top:8px" class="row">
+          <div class="row margin-top-8">
             <input id="exp" placeholder="MM/YY" />
             <input id="cvc" class="small" placeholder="CVC" inputmode="numeric" />
           </div>
 
-          <label style="margin-top:12px" class="muted">
+          <label class="muted margin-top-12">
             <input id="agree" type="checkbox" /> I agree to the Terms of Service & Refund Policy
           </label>
 
@@ -107,9 +79,9 @@
             <button id="placeBtn" class="btn" type="submit">Pay <span id="totalBtn">$0.00</span></button>
           </div>
 
-          <div id="loading" style="display:none;margin-top:12px;color:var(--muted)">Processing order…</div>
-          <div id="result" style="display:none;margin-top:12px" class="result"></div>
-          <div id="status" style="display:none" class="status"></div>
+          <div id="loading">Processing order…</div>
+          <div id="result" class="result"></div>
+          <div id="status" class="status"></div>
         </form>
       </div>
 
@@ -117,16 +89,16 @@
         <div class="panel">
           <h3>Order Summary</h3>
       
-          <div class="totals" style="margin-top:8px">
+          <div class="totals">
             <div class="line"><div>Subtotal</div><div id="subtotal">$0.00</div></div>
             <div class="line"><div>Taxes (7%)</div><div id="taxes">$0.00</div></div>
             <div class="line"><div>Shipping</div><div id="shippingCost">$0.00</div></div>
-            <div style="height:1px;background:rgba(255,255,255,0.03);margin:8px 0"></div>
-            <div class="line" style="font-weight:600"><div>Total</div><div id="total">$0.00</div></div>
+            <div class="divider-line"></div>
+            <div class="line font-weight-600"><div>Total</div><div id="total">$0.00</div></div>
           </div>
         </div>
 
-        <div style="height:12px"></div>
+        <div class="height-spacer"></div>
       </aside>
     </div>
 
@@ -552,7 +524,7 @@
                 <h3>✅ Payment Successful!</h3>
                 <p><strong>Order Confirmation:</strong> ${data.OrderId || orderId}</p>
                 <p><strong>Amount Charged:</strong> $${Number(data.AuthorizedAmount || total).toFixed(2)}</p>
-                <p>Thank you for your purchase! You will receive an email confirmation shortly.</p>
+                <p>Thank you for your purchase!</p>
             `;
             // Generate new random order for next use
             state.subtotal = generateRandomOrderAmount();

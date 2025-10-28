@@ -1,0 +1,632 @@
+/* Universal Styles - Vanilla Checkout Theme */
+/* All pages will use this single CSS file */
+
+/* ===== COLOR VARIABLES ===== */
+:root {
+  --bg: #0b1220;           /* Background */
+  --panel: #0f1724;        /* Panels/containers */
+  --muted: #94a3b8;        /* Muted text */
+  --accent: #3b82f6;       /* Blue accent */
+  --success: #10b981;      /* Green for success */
+  --danger: #ef4444;       /* Red for errors */
+  --text-primary: #e6eef8; /* Main text color */
+  --input-bg: #0b1017;     /* Input field background */
+  --border-subtle: rgba(255,255,255,0.03); /* Subtle borders */
+  --border-light: rgba(255,255,255,0.06);  /* Light borders */
+}
+
+/* ===== BASE STYLES ===== */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+/* ===== COMMON LAYOUT COMPONENTS ===== */
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--panel);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-subtle);
+}
+
+.wrap {
+  max-width: 980px;
+  margin: 28px auto;
+  padding: 20px;
+}
+
+.panel {
+  background: var(--panel);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-size: 2rem;
+  letter-spacing: 1px;
+}
+
+h2 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+h3 {
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+}
+
+/* ===== FORM ELEMENTS ===== */
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* Checkbox labels - special styling for inline checkboxes */
+label.muted {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+input[type="text"], 
+input[type="email"], 
+input[type="number"],
+input,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  background: var(--input-bg);
+  color: var(--text-primary) !important;
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Checkbox inputs - don't apply the full input styling */
+input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+/* Payment form specific inputs - smaller with white background */
+#exp, #cvc {
+  background: white !important;
+  color: #333 !important;
+  padding: 6px 8px !important;
+  font-size: 14px !important;
+  border-radius: 0 !important;
+  height: auto !important;
+}
+
+input:focus, select:focus {
+  background: var(--panel);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+  color: var(--text-primary) !important;
+}
+
+/* Payment form focus states */
+#exp:focus, #cvc:focus {
+  background: white !important;
+  color: #333 !important;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* ===== BUTTONS ===== */
+.btn, button {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  border: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:hover, button:hover {
+  background: #2563eb;
+}
+
+.btn.secondary {
+  background: transparent;
+  border: 1px solid var(--border-light);
+}
+
+/* This is our foundation - ready for Step 2? */
+
+/* ===== ORDER MANAGEMENT PAGE STYLES ===== */
+
+/* Controls Section */
+.controls-section {
+  margin-bottom: 1.5rem;
+}
+
+.controls-title {
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.controls input,
+.controls select {
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  flex: 1;
+  min-width: 200px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: all 0.2s ease-in-out;
+  border: 1px solid var(--border-light);
+}
+
+.controls button {
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  min-width: 120px;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.controls button:hover {
+  background: #2563eb;
+}
+
+.controls input:focus,
+.controls select:focus {
+  background: var(--panel);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Order List */
+#orderList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#orderList li {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--input-bg);
+  transition: background 0.2s ease-in-out;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+#orderList li:hover {
+  background: var(--panel);
+  border-color: var(--border-light);
+}
+
+#orderList li strong {
+  color: var(--accent);
+}
+
+#orderList li em {
+  color: var(--success);
+  font-style: normal;
+  font-weight: bold;
+}
+
+#orderList li small {
+  color: var(--muted);
+}
+
+/* No results */
+.no-results {
+  text-align: center;
+  padding: 1rem;
+  color: var(--muted);
+  background: var(--input-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+/* ===== VANILLA CHECKOUT PAGE STYLES ===== */
+
+/* Grid Layout for Checkout */
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 360px;
+}
+
+/* Form Rows */
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.row > * {
+  flex: 1;
+}
+
+.small {
+  width: 80px;
+}
+
+/* Status Messages */
+.status {
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 12px;
+}
+
+.status.success {
+  background: transparent;
+  border-left: 4px solid var(--success);
+  color: var(--text-primary);
+}
+
+.status.error {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+}
+
+/* Totals Section */
+.totals {
+  font-size: 14px;
+}
+
+.totals .line {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+/* Brand Badge */
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  font-size: 13px;
+}
+
+/* Preview Text */
+.preview {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Controls - Vanilla Checkout (left-aligned) */
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-start;
+}
+
+/* Controls - Order Management (centered) */
+.controls-section .controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+}
+
+/* Links */
+.link {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 13px;
+}
+
+/* Footer */
+footer {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Muted Text */
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Secondary Button */
+.btn.secondary {
+  background: transparent;
+  border: 1px solid var(--border-light);
+}
+
+/* Responsive Design */
+@media (max-width: 880px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .small {
+    width: 64px;
+  }
+}
+
+/* ===== SETTLEMENT PAGE STYLES ===== */
+
+/* Settlement page uses centered layout */
+.settlement-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+/* Settlement container - smaller and centered */
+.settlement-container {
+  background: var(--panel);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  width: 350px;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Settlement form elements */
+.settlement-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.settlement-container label {
+  display: block;
+  margin: 10px 0 5px;
+  color: var(--muted);
+}
+
+.settlement-container input {
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+.settlement-container input:focus {
+  background: var(--panel);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Settlement buttons */
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.buttons button {
+  width: 48%;
+  padding: 10px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.buttons button:hover {
+  background: #2563eb;
+}
+
+.btn-reset {
+  background: var(--muted) !important;
+}
+
+.btn-reset:hover {
+  background: #6b7280 !important;
+}
+
+/* Settlement messages - keep colored backgrounds */
+.message {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  display: none;
+}
+
+.settlement-container .message.error {
+  background: rgba(239,68,68,0.1);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.settlement-container .message.success {
+  background: rgba(16,185,129,0.1);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+/* Checkout page messages - clean white text, no backgrounds, no borders */
+.result.success {
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+}
+
+.result.error {
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+}
+
+/* General success/error classes (fallback) */
+.success {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--success);
+}
+
+.error {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--danger);
+}
+
+/* ===== ADDITIONAL VANILLA CHECKOUT STYLES ===== */
+
+/* Spacing utilities */
+.margin-top-8 {
+  margin-top: 8px;
+}
+
+.margin-top-12 {
+  margin-top: 12px;
+}
+
+.margin-top-16 {
+  margin-top: 16px;
+}
+
+/* Display utilities */
+.display-none {
+  display: none;
+}
+
+/* Font weight */
+.font-weight-600 {
+  font-weight: 600;
+}
+
+/* Divider line */
+.divider-line {
+  height: 1px;
+  background: rgba(255,255,255,0.03);
+  margin: 8px 0;
+}
+
+/* Height spacer */
+.height-spacer {
+  height: 12px;
+}
+
+/* Loading and result states */
+#loading {
+  display: none;
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+#result {
+  display: none;
+  margin-top: 12px;
+}
+
+#status {
+  display: none;
+}
+
+/* Brand badge display */
+#brandBadge {
+  display: none;
+}
+
+/* Totals spacing */
+.totals {
+  margin-top: 8px;
+}
+
+/* Masked preview */
+#maskedPreview {
+  margin-top: 8px;
+}
+
+/* ===== INDEX PAGE STYLES ===== */
+
+/* Navigation grid */
+.nav-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+  margin: 40px 0;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Navigation cards */
+.nav-card {
+  background: var(--panel);
+  padding: 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-primary);
+  border: 2px solid var(--border-light);
+  transition: all 0.3s;
+}
+
+.nav-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+.nav-card h3 {
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.nav-card p {
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Footer */
+footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+  color: var(--muted);
+}
