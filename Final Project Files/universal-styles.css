@@ -98,6 +98,35 @@ select {
   color: var(--text-primary) !important;
   box-sizing: border-box;
   font-size: 1rem;
+}
+
+/* Order List Styles */
+#orderList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  background: var(--input-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+.settle-button {
+  background-color: var(--input-bg);
+  color: var(--muted);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settle-button:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+  background-color: var(--panel);
   transition: all 0.2s ease-in-out;
 }
 

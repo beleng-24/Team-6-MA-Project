@@ -18,9 +18,22 @@ function renderOrders(orderData) {
     }
     orderData.forEach(order => {
         const li = document.createElement("li");
-        // Add card information if available
+        // Create a div to hold the order information
+        const orderInfo = document.createElement("div");
         const cardInfo = order.cardType && order.last4 ? ` (${order.cardType} •••• ${order.last4})` : '';
-        li.textContent = `${order.id} - ${order.customer} - $${order.amount.toFixed(2)} - ${order.status} - ${order.date}${cardInfo}`;
+        orderInfo.textContent = `${order.id} - ${order.customer} - $${order.amount.toFixed(2)} - ${order.status} - ${order.date}${cardInfo}`;
+        
+        // Create the settlement button
+        const settleButton = document.createElement("button");
+        settleButton.textContent = "Settle";
+        settleButton.className = "settle-button";
+        settleButton.onclick = () => redirectToSettlement(order);
+        
+        // Add the elements to the list item
+        li.appendChild(orderInfo);
+        if (order.status !== "Settled") {
+            li.appendChild(settleButton);
+        }
         orderList.appendChild(li);
     });
 }
@@ -98,6 +111,24 @@ async function loadOrdersFromDatabase() {
         } else {
             console.error('❌ Failed to load orders:', data.error);
             orderList.innerHTML = "<li>Failed to load orders from database. Please check server connection.</li>";
+        }
+    } catch (error) {
+        console.error('❌ Error loading orders:', error);
+        orderList.innerHTML = "<li>An error occurred while loading orders.</li>";
+    }
+}
+
+// Function to redirect to settlement page with pre-filled data
+function redirectToSettlement(order) {
+    const params = new URLSearchParams({
+        orderId: order.id,
+        customer: order.customer,
+        amount: order.amount,
+        cardType: order.cardType || '',
+        last4: order.last4 || ''
+    });
+    window.location.href = `settlement.html?${params.toString()}`;
+}
         }
     } catch (error) {
         console.error('❌ Error loading orders:', error);
