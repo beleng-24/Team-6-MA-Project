@@ -98,6 +98,7 @@ select {
   color: var(--text-primary) !important;
   box-sizing: border-box;
   font-size: 1rem;
+  transition: all 0.2s ease-in-out;
 }
 
 /* Order List Styles */
@@ -127,7 +128,6 @@ select {
   color: var(--text-primary);
   border-color: var(--accent);
   background-color: var(--panel);
-  transition: all 0.2s ease-in-out;
 }
 
 /* Checkbox inputs - don't apply the full input styling */

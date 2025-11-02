@@ -129,12 +129,6 @@ function redirectToSettlement(order) {
     });
     window.location.href = `settlement.html?${params.toString()}`;
 }
-        }
-    } catch (error) {
-        console.error('❌ Error loading orders:', error);
-        orderList.innerHTML = "<li>Error connecting to server. Please make sure the server is running.</li>";
-    }
-}
 
 // Initial load from database
 loadOrdersFromDatabase();
