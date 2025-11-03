@@ -24,24 +24,24 @@ const db = mysql.createConnection({
 // Test database connection
 db.connect((err) => {
     if (err) {
-        console.error('❌ Database connection failed:', err);
+        console.error('Database connection failed:', err);
         return;
     }
-    console.log('✅ Connected to MySQL database: ecommerce_system');
+    console.log('Connected to MySQL database: ecommerce_system');
 });
 
 // API Endpoints
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
-    console.log('✅ Test endpoint hit!');
+    console.log('Test endpoint hit!');
     res.json({ success: true, message: 'Server is working!' });
 });
 
 // 1. Save Customer and Order Data (from Vanilla Checkout)
 app.post('/api/save-order', async (req, res) => {
-    console.log('📥 Received save-order request');
-    console.log('📋 Request body:', req.body);
+    console.log('Received save-order request');
+    console.log('Request body:', req.body);
     
     const {
         // Customer data
@@ -54,7 +54,7 @@ app.post('/api/save-order', async (req, res) => {
         cardType, maskedCard, expirationMonth, expirationYear
     } = req.body;
 
-    console.log('🔍 Extracted data:', {
+    console.log('Extracted data:', {
         firstName, lastName, address, city, state, zip, email,
         orderId, subtotal, tax, total,
         authorizationToken, authorizedAmount, authorizationDate
@@ -107,10 +107,10 @@ app.post('/api/save-order', async (req, res) => {
     } catch (error) {
         // Rollback on error
         await db.promise().rollback();
-        console.error('❌ Error saving order:', error);
-        console.error('❌ Error details:', error.message);
-        console.error('❌ SQL Error Code:', error.code);
-        console.error('❌ Request body:', req.body);
+        console.error('Error saving order:', error);
+        console.error('Error details:', error.message);
+        console.error('SQL Error Code:', error.code);
+        console.error('Request body:', req.body);
         res.status(500).json({ 
             success: false, 
             error: 'Failed to save order data',
@@ -121,7 +121,7 @@ app.post('/api/save-order', async (req, res) => {
 
 // 2. Get Orders for Order Management Page
 app.get('/api/orders', async (req, res) => {
-    console.log('📋 Orders endpoint requested');
+    console.log('Orders endpoint requested');
     try {
         const [orders] = await db.promise().query(`
             SELECT 
@@ -138,10 +138,10 @@ app.get('/api/orders', async (req, res) => {
             ORDER BY o.CreatedAt DESC
         `);
 
-        console.log('✅ Found', orders.length, 'orders');
+        console.log('Found', orders.length, 'orders');
         res.json({ success: true, orders: orders });
     } catch (error) {
-        console.error('❌ Error fetching orders:', error);
+        console.error('Error fetching orders:', error);
         res.status(500).json({ success: false, error: 'Failed to fetch orders' });
     }
 });
@@ -149,7 +149,7 @@ app.get('/api/orders', async (req, res) => {
 // 3. Get Order for Settlement Validation
 app.get('/api/order/:orderId', async (req, res) => {
     const { orderId } = req.params;
-    console.log('🔍 Order lookup request for:', orderId);
+    console.log('Order lookup request for:', orderId);
     
     try {
         const [result] = await db.promise().query(`
@@ -164,17 +164,17 @@ app.get('/api/order/:orderId', async (req, res) => {
             WHERE o.OrderID = ?
         `, [orderId]);
 
-        console.log('📋 Query result:', result);
+        console.log('Query result:', result);
 
         if (result.length === 0) {
-            console.log('❌ Order not found:', orderId);
+            console.log('Order not found:', orderId);
             return res.status(404).json({ success: false, error: 'Order not found' });
         }
 
-        console.log('✅ Order found:', result[0]);
+        console.log('Order found:', result[0]);
         res.json({ success: true, order: result[0] });
     } catch (error) {
-        console.error('❌ Error fetching order:', error);
+        console.error('Error fetching order:', error);
         res.status(500).json({ success: false, error: 'Failed to fetch order' });
     }
 });
@@ -182,7 +182,7 @@ app.get('/api/order/:orderId', async (req, res) => {
 // 4. Process Settlement
 app.post('/api/settle-order', async (req, res) => {
     const { orderId, finalAmount, settledBy } = req.body;
-    console.log('💰 Settlement request:', { orderId, finalAmount, settledBy });
+    console.log('Settlement request:', { orderId, finalAmount, settledBy });
 
     try {
         // Generate a random warehouse user for settlement
@@ -199,7 +199,7 @@ app.post('/api/settle-order', async (req, res) => {
         const randomUser = warehouseUsers[randomIndex];
         const randomName = warehouseNames[randomIndex];
         
-        console.log('👤 Generated warehouse user:', randomUser, '(' + randomName + ')');
+        console.log('Generated warehouse user:', randomUser, '(' + randomName + ')');
         
         // Ensure the warehouse user exists (just UserName)
         await db.promise().query(`
@@ -208,7 +208,7 @@ app.post('/api/settle-order', async (req, res) => {
         `, [randomUser]);
         
         // Insert settlement record with random warehouse user
-        console.log('📝 Inserting settlement record...');
+        console.log('Inserting settlement record...');
         const settlementResult = await db.promise().query(`
             INSERT INTO Settlement (AuthorizationToken, OrderID, SettledAmount, SettledDate, SettledBy, SettlementStatus)
             SELECT a.AuthorizationToken, ?, ?, NOW(), ?, 'completed'
@@ -216,32 +216,32 @@ app.post('/api/settle-order', async (req, res) => {
             WHERE a.OrderID = ?
         `, [orderId, finalAmount, randomUser, orderId]);
         
-        console.log('✅ Settlement record inserted:', settlementResult[0]);
+        console.log('Settlement record inserted:', settlementResult[0]);
 
         // Update payment status
-        console.log('📝 Updating payment status...');
+        console.log('Updating payment status...');
         const paymentResult = await db.promise().query(`
             UPDATE Payment SET PaymentStatus = 'Settled' WHERE OrderID = ?
         `, [orderId]);
         
-        console.log('✅ Payment status updated:', paymentResult[0]);
+        console.log('Payment status updated:', paymentResult[0]);
 
         res.json({ 
             success: true, 
             message: `Order settled successfully by ${randomName} (${randomUser})` 
         });
     } catch (error) {
-        console.error('❌ Error settling order:', error);
-        console.error('❌ Error details:', error.message);
-        console.error('❌ SQL Error Code:', error.code);
-        console.error('❌ Settlement request data:', { orderId, finalAmount, settledBy });
+        console.error('Error settling order:', error);
+        console.error('Error details:', error.message);
+        console.error('SQL Error Code:', error.code);
+        console.error('Settlement request data:', { orderId, finalAmount, settledBy });
         res.status(500).json({ success: false, error: 'Failed to settle order', details: error.message });
     }
 });
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📁 Serving files from: ${__dirname}`);
-    console.log(`🌐 Access your app at: http://localhost:${PORT}/Vanilla%20Checkout.html`);
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Serving files from: ${__dirname}`);
+    console.log(`Access your app at: http://localhost:${PORT}/Vanilla%20Checkout.html`);
 });

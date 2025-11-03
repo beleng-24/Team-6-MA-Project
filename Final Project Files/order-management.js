@@ -89,12 +89,12 @@ if (sortSelect) sortSelect.addEventListener("change", applyFiltersAndSorting);
 // Fetch orders from database
 async function loadOrdersFromDatabase() {
     try {
-        console.log('🔄 Loading orders from database...');
+        console.log('Loading orders from database...');
         const response = await fetch('/api/orders');
         const data = await response.json();
         
         if (data.success) {
-            console.log('📋 Raw order data from server:', data.orders);
+            console.log('Raw order data from server:', data.orders);
             // Transform the database format to match our UI format
             orders = data.orders.map(order => ({
                 id: order.id,
@@ -105,15 +105,15 @@ async function loadOrdersFromDatabase() {
                 cardType: order.cardType,
                 last4: order.last4
             }));
-            console.log('✅ Loaded', orders.length, 'orders from database');
-            console.log('📋 Processed orders:', orders);
+            console.log('Loaded', orders.length, 'orders from database');
+            console.log('Processed orders:', orders);
             applyFiltersAndSorting(); // Re-render with new data
         } else {
-            console.error('❌ Failed to load orders:', data.error);
+            console.error('Failed to load orders:', data.error);
             orderList.innerHTML = "<li>Failed to load orders from database. Please check server connection.</li>";
         }
     } catch (error) {
-        console.error('❌ Error loading orders:', error);
+        console.error('Error loading orders:', error);
         orderList.innerHTML = "<li>An error occurred while loading orders.</li>";
     }
 }

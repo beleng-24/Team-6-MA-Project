@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Customer Checkout</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💳</text></svg>" />
   <link rel="stylesheet" href="universal-styles.css">
   <style>
     .brand-badge {
@@ -413,12 +412,12 @@
             
             const result = await response.json();
             if (result.success) {
-                console.log('✅ Order saved to database:', result.orderId);
+                console.log('Order saved to database:', result.orderId);
             } else {
-                console.error('❌ Failed to save to database:', result.error);
+                console.error('Failed to save to database:', result.error);
             }
         } catch (error) {
-            console.error('❌ Database save error:', error);
+            console.error('Database save error:', error);
         }
     }
 
@@ -565,7 +564,7 @@
             
             result.className = 'result success';
             result.innerHTML = `
-                <h3>✅ Payment Successful!</h3>
+                <h3>Payment Successful!</h3>
                 <p><strong>Order Confirmation:</strong> ${data.OrderId || orderId}</p>
                 <p><strong>Amount Charged:</strong> $${Number(data.AuthorizedAmount || total).toFixed(2)}</p>
                 <p>Thank you for your purchase!</p>
@@ -603,7 +602,7 @@
             
             result.className = 'result error';
             result.innerHTML = `
-                <h3>❌ Payment Failed</h3>
+                <h3>Payment Failed</h3>
                 <p>${errorMessage}</p>
                 <p>Please try again or contact customer service if the problem persists.</p>
             `;
@@ -614,7 +613,7 @@
         result.style.display = 'block';
         result.className = 'result error';
         result.innerHTML = `
-            <h3>❌ Payment Failed</h3>
+            <h3>Payment Failed</h3>
             <p>We're having trouble processing your payment right now.</p>
             <p>Please check your internet connection and try again.</p>
         `;

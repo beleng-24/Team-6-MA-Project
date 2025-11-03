@@ -45,7 +45,7 @@
 
       try {
         // Step 1: Look up the order in the database
-        console.log('🔍 Looking up order:', orderId);
+        console.log('Looking up order:', orderId);
         const orderResponse = await fetch(`http://localhost:3000/api/order/${orderId}`);
         const orderData = await orderResponse.json();
         
@@ -55,7 +55,7 @@
         }
         
         const order = orderData.order;
-        console.log('📋 Order found:', order);
+        console.log('Order found:', order);
         
         // Step 2: Check if already settled
         if (order.settled) {
@@ -73,7 +73,7 @@
         }
         
         // Step 4: Process the settlement
-        console.log('💰 Processing settlement...');
+        console.log('Processing settlement...');
         const settlementResponse = await fetch('http://localhost:3000/api/settle-order', {
           method: 'POST',
           headers: {
@@ -89,14 +89,14 @@
         const settlementData = await settlementResponse.json();
         
         if (settlementData.success) {
-          showMessage(`✅ Settlement processed successfully!\nOrder: ${orderId}\nAuthorized: $${authorizedAmount.toFixed(2)}\nSettled: $${finalAmount.toFixed(2)}`, "success");
+          showMessage(`Settlement processed successfully!\nOrder: ${orderId}\nAuthorized: $${authorizedAmount.toFixed(2)}\nSettled: $${finalAmount.toFixed(2)}`, "success");
           form.reset();
         } else {
           showMessage(`Failed to process settlement: ${settlementData.error}`, "error");
         }
         
       } catch (error) {
-        console.error('❌ Settlement error:', error);
+        console.error('Settlement error:', error);
         showMessage('Connection error. Please make sure the server is running and try again.', "error");
       }
     });
