@@ -14,11 +14,11 @@ app.use(express.static('.')); // Serve static files (HTML, CSS, JS)
 
 // MySQL Database Connection
 const db = mysql.createConnection({
-    host: 'localhost',      // Change if your MySQL is hosted elsewhere
-    port: 3306,             // Default MySQL port
-    user: 'root',  // Replace with your MySQL username
-    password: 'sqltime25', // Replace with your MySQL password
-    database: 'ecommerce_system'
+    host: process.env.DB_HOST || 'localhost',      // Use env var or fallback to localhost
+    port: process.env.DB_PORT || 3306,             // Use env var or fallback to 3306
+    user: process.env.DB_USER || 'root',           // Use env var or fallback to root
+    password: process.env.DB_PASSWORD || 'sqltime25', // Use env var or fallback to your local password
+    database: process.env.DB_NAME || 'ecommerce_system' // Use env var or fallback to your database name
 });
 
 // Test database connection
