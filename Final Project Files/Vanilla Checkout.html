@@ -6,6 +6,21 @@
   <title>Customer Checkout</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💳</text></svg>" />
   <link rel="stylesheet" href="universal-styles.css">
+  <style>
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 6px;
+      height: 28px;
+    }
+    .card-logo {
+      height: 28px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -350,9 +365,38 @@
     function updateCardPreview(){
       maskedPreviewEl.textContent = state.card.number ? "Card: " + maskCardNumber(state.card.number) : "";
       const brand = state.card.number ? guessBrand(state.card.number) : null;
-      if (brand){
+
+      // Only show a logo for recognized card brands (not generic "Card")
+      if (brand && brand !== 'Card'){
         brandBadgeEl.style.display = "inline-flex";
-        brandBadgeEl.textContent = brand;
+        brandBadgeEl.innerHTML = "";
+        const img = document.createElement('img');
+        img.alt = brand + ' logo';
+        img.className = 'card-logo';
+
+        // Use simple inline SVG data-URIs as lightweight logos so no external files are required.
+        switch (brand) {
+          case 'Visa':
+            // Use external image file (place visa.png next to this HTML file)
+            img.src = 'visa.png';
+            break;
+          case 'Mastercard':
+            // Use external image file (place mastercard.png next to this HTML file)
+            img.src = 'mastercard.png';
+            break;
+          case 'AmEx':
+            // Use external image file (place amex.png next to this HTML file)
+            img.src = 'amex.png';
+            break;
+          case 'Discover':
+            // Use external image file (place discover.png next to this HTML file)
+            img.src = 'discover.png';
+            break;
+          default:
+            brandBadgeEl.style.display = 'none';
+            return;
+        }
+        brandBadgeEl.appendChild(img);
       } else {
         brandBadgeEl.style.display = "none";
       }
