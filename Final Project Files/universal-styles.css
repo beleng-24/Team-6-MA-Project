@@ -1,19 +1,20 @@
 /* Universal Styles - Vanilla Checkout Theme */
 /* All pages will use this single CSS file */
 
-/* ===== COLOR VARIABLES ===== */
+/* ===== COLOR VARIABLES — KSU THEME ===== */
 :root {
-  --bg: #0b1220;           /* Background */
-  --panel: #0f1724;        /* Panels/containers */
-  --muted: #94a3b8;        /* Muted text */
-  --accent: #3b82f6;       /* Blue accent */
-  --success: #10b981;      /* Green for success */
-  --danger: #ef4444;       /* Red for errors */
-  --text-primary: #e6eef8; /* Main text color */
-  --input-bg: #0b1017;     /* Input field background */
-  --border-subtle: rgba(255,255,255,0.03); /* Subtle borders */
-  --border-light: rgba(255,255,255,0.06);  /* Light borders */
+  --bg: #ffffff;            /* White background */
+  --panel: #f7f7f7;         /* Light panel background */
+  --muted: #555555;         /* Neutral muted text */
+  --accent: #FFC425;        /* KSU Gold */
+  --success: #10b981;       /* Green for success (same) */
+  --danger: #ef4444;        /* Red for errors (same) */
+  --text-primary: #000000;  /* Black main text */
+  --input-bg: #ffffff;      /* White input fields */
+  --border-subtle: rgba(0,0,0,0.05);
+  --border-light: rgba(0,0,0,0.1);
 }
+
 
 /* ===== BASE STYLES ===== */
 html, body {
@@ -56,6 +57,19 @@ h1 {
   font-size: 2rem;
   letter-spacing: 1px;
 }
+
+/* KSUS Store logo style */
+.ksus-logo {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--accent);                       /* Gold */
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: "Trebuchet MS", "Helvetica Neue", sans-serif;
+}
+
 
 h2 {
   color: var(--text-primary);
@@ -162,27 +176,29 @@ input:focus, select:focus {
   box-shadow: 0 0 0 2px var(--accent);
 }
 
-/* ===== BUTTONS ===== */
+/* ===== BUTTONS — KSU GOLD ===== */
 .btn, button {
   display: inline-block;
   padding: 10px 14px;
   border-radius: 10px;
-  background: var(--accent);
-  color: white;
+  background: var(--accent);          /* KSU Gold */
+  color: var(--text-primary);         /* Black text */
   border: 0;
   cursor: pointer;
   font-size: 1rem;
+  font-weight: 600;
   transition: all 0.2s ease-in-out;
 }
 
 .btn:hover, button:hover {
-  background: #2563eb;
+  background: #e6b800;                /* Slightly darker gold on hover */
 }
 
 .btn.secondary {
   background: transparent;
   border: 1px solid var(--border-light);
 }
+
 
 /* This is our foundation - ready for Step 2? */
 
@@ -218,8 +234,8 @@ input:focus, select:focus {
   padding: 0.7rem 1rem;
   border: none;
   border-radius: 8px;
-  background: var(--accent);
-  color: white;
+  background: var(--accent);          /* Gold */
+  color: var(--text-primary);         /* Black */
   cursor: pointer;
   min-width: 120px;
   font-size: 1rem;
@@ -227,8 +243,9 @@ input:focus, select:focus {
 }
 
 .controls button:hover {
-  background: #2563eb;
+  background: #e6b800;                /* Darker gold */
 }
+
 
 .controls input:focus,
 .controls select:focus {
@@ -476,8 +493,8 @@ footer {
   width: 48%;
   padding: 10px;
   border: none;
-  background: var(--accent);
-  color: white;
+  background: var(--accent);          /* Gold */
+  color: var(--text-primary);         /* Black text */
   font-size: 16px;
   border-radius: 6px;
   cursor: pointer;
@@ -485,8 +502,9 @@ footer {
 }
 
 .buttons button:hover {
-  background: #2563eb;
+  background: #e6b800;                /* Darker gold */
 }
+
 
 .btn-reset {
   background: var(--muted) !important;
@@ -638,8 +656,9 @@ footer {
 .nav-card:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);  /* Neutral shadow */
 }
+
 
 .nav-card h3 {
   color: var(--accent);
