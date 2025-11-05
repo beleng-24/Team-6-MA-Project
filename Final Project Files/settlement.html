@@ -111,6 +111,24 @@
       messageBox.className = "message " + type;
       messageBox.style.display = "block";
     }
+    // Auto-fill form from URL parameters when page loads
+function autoFillFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+    const amount = urlParams.get('amount');
+    
+    if (orderId) {
+        document.getElementById('orderId').value = orderId;
+    }
+    
+    if (amount) {
+        document.getElementById('finalAmount').value = amount;
+    }
+    
+}
+
+// Call the auto-fill function when page loads
+window.addEventListener('load', autoFillFromURL);
   </script>
 </body>
 </html>
