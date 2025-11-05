@@ -23,7 +23,8 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Customer Checkout</h1>
+    <h1 class="ksus-logo">KSUS Store</h1>
+
 
     <div class="grid">
       <div>
@@ -365,7 +366,7 @@
       maskedPreviewEl.textContent = state.card.number ? "Card: " + maskCardNumber(state.card.number) : "";
       const brand = state.card.number ? guessBrand(state.card.number) : null;
 
-      // Only show a logo for recognized card brands (not generic "Card")
+      // Only show a logo for recognized card brands
       if (brand && brand !== 'Card'){
         brandBadgeEl.style.display = "inline-flex";
         brandBadgeEl.innerHTML = "";
@@ -373,7 +374,6 @@
         img.alt = brand + ' logo';
         img.className = 'card-logo';
 
-        // Use simple inline SVG data-URIs as lightweight logos so no external files are required.
         switch (brand) {
           case 'Visa':
             // Use external image file (place visa.png next to this HTML file)
