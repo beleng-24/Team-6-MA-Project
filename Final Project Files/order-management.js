@@ -130,5 +130,46 @@ function redirectToSettlement(order) {
     window.location.href = `settlement.html?${params.toString()}`;
 }
 
+// Load and display revenue data
+async function loadRevenue() {
+    try {
+        console.log('Loading revenue data...');
+        const response = await fetch('/api/revenue');
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('Revenue loaded:', data.revenue);
+            // Format as currency and display
+            const formattedRevenue = `$${parseFloat(data.revenue).toFixed(2)}`;
+            document.getElementById('totalRevenue').textContent = formattedRevenue;
+        } else {
+            console.error('Failed to load revenue:', data.error);
+            document.getElementById('totalRevenue').textContent = 'Error loading revenue';
+        }
+    } catch (error) {
+        console.error('Error loading revenue:', error);
+        document.getElementById('totalRevenue').textContent = 'Error loading revenue';
+    }
+}
+
+// Load and display customer spending data
+async function loadCustomerSpending() {
+    try {
+        const response = await fetch('/api/customer-spending');
+        const data = await response.json();
+        
+        if (data.success) {
+            const formattedSpending = `$${parseFloat(data.avgSpending).toFixed(2)}`;
+            document.getElementById('customerSpending').textContent = formattedSpending;
+        }
+    } catch (error) {
+        console.error('Error loading customer spending:', error);
+    }
+}
+
+// Call when page loads
+loadCustomerSpending();
+
 // Initial load from database
 loadOrdersFromDatabase();
+loadRevenue(); // Load revenue when page loads

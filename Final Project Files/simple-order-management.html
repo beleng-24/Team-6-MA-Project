@@ -8,11 +8,22 @@
 </head>
 <body>
     <div class="container">
-        <h1>Order Management</h1>
+        <h1>KSUS Store Orders</h1>
+
+        <!-- Dashboard Metrics Container -->
+        <div class="dashboard-container">
+            <div class="dashboard-section">
+                <h2>Average Daily Revenue (30 days): <span id="totalRevenue">Loading...</span></h2>
+    
+            </div>
+
+            <div class="dashboard-section">
+                <h2>Average Revenue per Customer (30 days): <span id="customerSpending">Loading...</span></h2>
+            </div>
+        </div>
 
 <!-- Controls Section -->
 <div class="controls-section">
-    <h2 class="controls-title">Filter and Sort Orders</h2>
     <div class="controls">
         <input type="text" id="filterInput" placeholder="Search by ID or Customer">
         <select id="statusFilter">

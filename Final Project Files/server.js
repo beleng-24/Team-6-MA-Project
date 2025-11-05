@@ -146,6 +146,73 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
+// Revenue Endpoint - Average daily revenue over active days  
+app.get('/api/revenue', async (req, res) => {
+    console.log('Daily revenue data requested');
+    try {
+        const [result] = await db.promise().query(`
+            SELECT 
+                SUM(Total) as totalRevenue,
+                COUNT(DISTINCT DATE(CreatedAt)) as activeDays
+            FROM \`Order\`
+            WHERE CreatedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        `);
+        
+        const totalRevenue = parseFloat(result[0].totalRevenue || 0);
+        const activeDays = parseInt(result[0].activeDays || 1);
+        const dailyRevenue = totalRevenue / activeDays;
+        
+        console.log('Total revenue:', totalRevenue);
+        console.log('Active days:', activeDays); 
+        console.log('Daily average:', dailyRevenue);
+        
+        res.json({ 
+            success: true, 
+            revenue: dailyRevenue,
+            activeDays: activeDays,
+            totalRevenue: totalRevenue,
+            debug: {
+                totalRevenue: totalRevenue,
+                activeDays: activeDays,
+                calculation: `${totalRevenue} / ${activeDays} = ${dailyRevenue}`
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching daily revenue:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch daily revenue' });
+    }
+});
+
+// Customer Spending Endpoint
+app.get('/api/customer-spending', async (req, res) => {
+    console.log('Customer spending data requested');
+    try {
+        const [result] = await db.promise().query(`
+            SELECT 
+                SUM(Total) as totalRevenue,
+                COUNT(DISTINCT CustomerID) as totalCustomers
+            FROM \`Order\`
+            WHERE CreatedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        `);
+        
+        const totalRevenue = parseFloat(result[0].totalRevenue || 0);
+        const totalCustomers = parseInt(result[0].totalCustomers || 1);
+        const avgSpending = totalRevenue / totalCustomers;
+        
+        console.log('Customer spending calculated:', avgSpending);
+        
+        res.json({ 
+            success: true, 
+            avgSpending: avgSpending,
+            totalCustomers: totalCustomers,
+            totalRevenue: totalRevenue
+        });
+    } catch (error) {
+        console.error('Error fetching customer spending:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch customer spending' });
+    }
+});
+
 // 3. Get Order for Settlement Validation
 app.get('/api/order/:orderId', async (req, res) => {
     const { orderId } = req.params;
