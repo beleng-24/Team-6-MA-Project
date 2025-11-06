@@ -394,7 +394,9 @@
       });
 
       document.getElementById("zip").addEventListener("input",(e)=>{ e.target.value = e.target.value.replace(/[^\d\-]/g,"").slice(0,10); });
-
+document.getElementById("cvc").addEventListener("input",(e)=>{ 
+  e.target.value = e.target.value.replace(/[^\d]/g,"").slice(0,4); 
+});
       document.getElementById("checkoutForm").addEventListener("submit", placeOrder);
     }
 
@@ -475,7 +477,7 @@
       if (expMonth < 1 || expMonth > 12) return "Enter a valid expiration month.";
       const currentYear = now.getFullYear() % 100; // two-digit year
       if (expYear < currentYear || (expYear === currentYear && expMonth < (now.getMonth()+1))) return "Card has expired.";
-      
+
       if (!/^\d{3,4}$/.test(document.getElementById("cvc").value)) return "Enter a valid CVC.";
       if (!document.getElementById("agree").checked) return "Please agree to terms & refund policy.";
       if (state.subtotal <= 0) return "Invalid order amount.";
