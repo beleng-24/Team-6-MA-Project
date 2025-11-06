@@ -723,3 +723,19 @@ footer {
     gap: 1rem;
   }
 }
+
+/* Message box base style */
+.message {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: none;
+}
+
+/* Red error message */
+.message.error {
+  color: #b91c1c;           /* Dark red text */
+  background-color: #fee2e2; /* Light red background */
+  border: 1px solid #dc2626; /* Red border */
+}
