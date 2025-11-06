@@ -6,18 +6,43 @@
   <title>Customer Checkout</title>
   <link rel="stylesheet" href="universal-styles.css">
   <style>
+    .preview {
+      margin-top: 6px;
+    }
+    .preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
     .brand-badge {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      margin-top: 6px;
       height: 28px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.03);
+      font-size: 13px;
+      color: inherit;
+      align-self: flex-start;
+    }
+    #maskedPreview {
+      color: var(--text-muted, #94a3b8);
+      font-size: 13px;
+      display: block;
     }
     .card-logo {
       height: 28px;
       width: auto;
       object-fit: contain;
       border-radius: 4px;
+    }
+    .preview {
+      display: flex;
+      align-items: center;
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-muted, #94a3b8);
     }
   </style>
 </head>
@@ -73,8 +98,10 @@
           <label for="cardNumber">Card number</label>
           <input id="cardNumber" type="text" inputmode="numeric" placeholder="4242 4242 4242 4242" autocomplete="cc-number" required />
           <div class="preview">
-            <span id="brandBadge" class="brand-badge"></span>
-            <div id="maskedPreview"></div>
+            <div class="preview-container">
+              <span id="brandBadge" class="brand-badge"></span>
+              <div id="maskedPreview"></div>
+            </div>
           </div>
 
           <label class="muted margin-top-8">
@@ -375,8 +402,13 @@
       maskedPreviewEl.textContent = state.card.number ? "Card: " + maskCardNumber(state.card.number) : "";
       const brand = state.card.number ? guessBrand(state.card.number) : null;
 
-      // Only show a logo for recognized card brands
-      if (brand && brand !== 'Card'){
+      if (brand === 'Card') {
+        // Show text badge for unrecognized cards
+        brandBadgeEl.style.display = "inline-flex";
+        brandBadgeEl.innerHTML = "";
+        brandBadgeEl.textContent = brand;
+      } else if (brand) {
+        // Show logo for recognized card brands
         brandBadgeEl.style.display = "inline-flex";
         brandBadgeEl.innerHTML = "";
         const img = document.createElement('img');
@@ -385,28 +417,19 @@
 
         switch (brand) {
           case 'Visa':
-            // Use external image file (place visa.png next to this HTML file)
             img.src = 'Card Logos/visa.png';
             break;
           case 'Mastercard':
-            // Use external image file (place mastercard.png next to this HTML file)
             img.src = 'Card Logos/mastercard.png';
             break;
           case 'AmEx':
-            // Use external image file (place amex.png next to this HTML file)
             img.src = 'Card Logos/amex.png';
             break;
           case 'Discover':
-            // Use external image file (place discover.png next to this HTML file)
             img.src = 'Card Logos/discover.png';
             break;
-          default:
-            brandBadgeEl.style.display = 'none';
-            return;
         }
         brandBadgeEl.appendChild(img);
-      } else {
-        brandBadgeEl.style.display = "none";
       }
     }
 
