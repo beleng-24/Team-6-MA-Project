@@ -470,6 +470,12 @@
       const digits = state.card.number || "";
       if (!/^\d{13,19}$/.test(digits)) return "Enter a valid card number.";
       if (!/^\d{2}\/\d{2}$/.test(document.getElementById("exp").value)) return "Expiry must be MM/YY.";
+      const [expMonth, expYear] = document.getElementById("exp").value.split("/").map(s=>parseInt(s,10));
+      const now = new Date();
+      if (expMonth < 1 || expMonth > 12) return "Enter a valid expiration month.";
+      const currentYear = now.getFullYear() % 100; // two-digit year
+      if (expYear < currentYear || (expYear === currentYear && expMonth < (now.getMonth()+1))) return "Card has expired.";
+      
       if (!/^\d{3,4}$/.test(document.getElementById("cvc").value)) return "Enter a valid CVC.";
       if (!document.getElementById("agree").checked) return "Please agree to terms & refund policy.";
       if (state.subtotal <= 0) return "Invalid order amount.";
