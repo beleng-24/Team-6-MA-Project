@@ -67,10 +67,9 @@
         
         // Step 3: Validate settlement amount against authorized amount
         const authorizedAmount = parseFloat(order.AuthorizedAmount);
-        const maxAllowedAmount = authorizedAmount * 1.15; // Allow 15% overage for shipping/handling
         
-        if (finalAmount > maxAllowedAmount) {
-          showMessage(`Error: Settlement amount ($${finalAmount.toFixed(2)}) exceeds authorized amount ($${authorizedAmount.toFixed(2)}) plus 15% allowance ($${maxAllowedAmount.toFixed(2)}).`, "error");
+        if (finalAmount > authorizedAmount) {
+          showMessage(`Error: Settlement amount ($${finalAmount.toFixed(2)}) cannot exceed authorized amount ($${authorizedAmount.toFixed(2)}).`, "error");
           return;
         }
         
