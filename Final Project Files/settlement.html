@@ -48,7 +48,7 @@
       try {
         // Step 1: Look up the order in the database
         console.log('Looking up order:', orderId);
-        const orderResponse = await fetch(`http://localhost:3000/api/order/${orderId}`);
+        const orderResponse = await fetch(`/api/order/${orderId}`);
         const orderData = await orderResponse.json();
         
         if (!orderData.success) {
@@ -75,7 +75,7 @@
         
         // Step 4: Process the settlement
         console.log('Processing settlement...');
-        const settlementResponse = await fetch('http://localhost:3000/api/settle-order', {
+        const settlementResponse = await fetch('/api/settle-order', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
