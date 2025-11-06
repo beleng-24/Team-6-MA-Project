@@ -1,0 +1,19 @@
+{
+  "name": "team-6-ma-project",
+  "version": "1.0.0",
+  "description": "KSU E-commerce Payment System",
+  "main": "server.js",
+  "scripts": {
+    "start": "cd 'Final Project Files' && node server.js",
+    "dev": "cd 'Final Project Files' && node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5", 
+    "express": "^5.1.0",
+    "mysql2": "^3.15.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
