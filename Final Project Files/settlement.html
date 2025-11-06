@@ -10,10 +10,10 @@
     <h2>Settle Order</h2>
     <form id="settlementForm">
       <label for="orderId">Order ID:</label>
-      <input type="text" id="orderId" required>
+      <input type="text" id="orderId">
 
       <label for="finalAmount">Final Amount:</label>
-      <input type="number" id="finalAmount" step="0.01" required>
+      <input type="number" id="finalAmount" step="0.01">
 
       <div class="buttons">
         <button type="submit">Submit</button>
@@ -35,10 +35,12 @@
       const finalAmount = parseFloat(document.getElementById("finalAmount").value);
 
       // Basic validation
-      if (!orderId || finalAmount <= 0 || isNaN(finalAmount)) {
-        showMessage("Error: Please enter valid Order ID and amount.", "error");
-        return;
+      if (orderId === "" || isNaN(finalAmount) || document.getElementById("finalAmount").value.trim() === "") {
+      showMessage("Please fill in all required fields.", "error");
+      return;
       }
+
+
 
       // Show processing message
       showMessage("Processing settlement...", "success");
