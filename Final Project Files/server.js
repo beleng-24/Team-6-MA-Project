@@ -293,6 +293,14 @@ app.post('/api/settle-order', async (req, res) => {
         
         console.log('Payment status updated:', paymentResult[0]);
 
+        // Update order status to Settled
+        console.log('Updating order status...');
+        const orderResult = await db.promise().query(`
+            UPDATE \`Order\` SET OrderStatus = 'Settled' WHERE OrderID = ?
+        `, [orderId]);
+        
+        console.log('Order status updated:', orderResult[0]);
+
         res.json({ 
             success: true, 
             message: `Order settled successfully by ${randomName} (${randomUser})` 
