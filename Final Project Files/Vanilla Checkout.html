@@ -287,7 +287,7 @@
         radio.addEventListener("change", ()=>{ state.shippingId = m.id; renderTotals(); });
         left.appendChild(radio);
         left.appendChild(document.createTextNode(m.label));
-        const cost = document.createElement("div"); cost.textContent = fmt(m.cost);
+        const cost = document.createElement("div"); cost.textContent = fmt(m.cost); cost.style.textAlign = "right"; cost.style.minWidth = "60px";
         wrap.appendChild(left); wrap.appendChild(cost);
         shippingOptionsEl.appendChild(wrap);
       });
