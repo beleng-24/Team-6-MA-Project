@@ -281,7 +281,7 @@
         const wrap = document.createElement("label");
         wrap.style.display = "flex"; wrap.style.justifyContent = "space-between"; wrap.style.padding = "8px"; wrap.style.borderRadius = "8px";
         wrap.style.cursor = "pointer"; wrap.style.marginBottom = "6px"; wrap.style.border = "1px solid rgba(255,255,255,0.03)";
-        const left = document.createElement("div"); left.style.display="flex"; left.style.alignItems="center"; left.style.gap="8px"; left.style.flex="1";
+        const left = document.createElement("div"); left.style.display="flex"; left.style.alignItems="center"; left.style.gap="8px"; left.style.width="180px";
         const radio = document.createElement("input"); radio.type="radio"; radio.name="shipping"; radio.value=m.id; radio.style.marginRight="6px";
         if (m.id === state.shippingId) radio.checked = true;
         radio.addEventListener("change", ()=>{ state.shippingId = m.id; renderTotals(); });
