@@ -12,22 +12,28 @@ app.use(cors()); // Allow cross-origin requests from your HTML files
 app.use(bodyParser.json()); // Parse JSON request bodies
 app.use(express.static('.')); // Serve static files (HTML, CSS, JS)
 
-// MySQL Database Connection
-const db = mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',      // Use env var or fallback to localhost
-    port: process.env.DB_PORT || 3306,             // Use env var or fallback to 3306
-    user: process.env.DB_USER || 'root',           // Use env var or fallback to root
-    password: process.env.DB_PASSWORD || 'sqltime25', // Use env var or fallback to your local password
-    database: process.env.DB_NAME || 'ecommerce_system' // Use env var or fallback to your database name
+// MySQL Database Connection Pool (with automatic reconnection)
+const db = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'sqltime25',
+    database: process.env.DB_NAME || 'ecommerce_system',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
 });
 
 // Test database connection
-db.connect((err) => {
+db.getConnection((err, connection) => {
     if (err) {
         console.error('Database connection failed:', err);
         return;
     }
-    console.log('Connected to MySQL database: ecommerce_system');
+    console.log('Connected to MySQL database:', process.env.DB_NAME || 'ecommerce_system');
+    connection.release(); // Release connection back to pool
 });
 
 // API Endpoints
