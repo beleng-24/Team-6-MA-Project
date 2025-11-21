@@ -66,12 +66,15 @@ app.post('/api/save-order', async (req, res) => {
         authorizationToken, authorizedAmount, authorizationDate
     });
 
+    // Get a connection from the pool for transaction
+    const connection = await db.promise().getConnection();
+    
     try {
         // Start transaction
-        await db.promise().beginTransaction();
+        await connection.beginTransaction();
 
         // 1. Insert Customer
-        const customerResult = await db.promise().query(
+        const customerResult = await connection.query(
             `INSERT INTO Customer (FirstName, LastName, Street, City, State, ZipCode, Email) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [firstName, lastName, address, city, state, zip, email]
@@ -79,14 +82,14 @@ app.post('/api/save-order', async (req, res) => {
         const customerId = customerResult[0].insertId;
 
         // 2. Insert Order  
-        await db.promise().query(
+        await connection.query(
             `INSERT INTO \`Order\` (OrderID, CustomerID, Subtotal, Tax, Total, OrderStatus, CreatedAt) 
              VALUES (?, ?, ?, ?, ?, 'Authorized', NOW())`,
             [orderId, customerId, subtotal, tax, total]
         );
 
         // 3. Insert Payment record
-        await db.promise().query(
+        await connection.query(
             `INSERT INTO Payment (CardType, MaskedCard, ExpirationMonth, ExpirationYear, PaymentStatus, OrderID) 
              VALUES (?, ?, ?, ?, 'Authorized', ?)`,
             [cardType, maskedCard, expirationMonth, expirationYear, orderId]
@@ -94,14 +97,17 @@ app.post('/api/save-order', async (req, res) => {
 
         // 4. Insert Authorization with unique token handling
         const uniqueAuthToken = authorizationToken + '_' + Date.now(); // Make token unique
-        await db.promise().query(
+        await connection.query(
             `INSERT INTO Authorization (AuthorizationToken, OrderID, AuthorizedAmount, AuthorizationCode, AuthorizationDate, ExpirationDate) 
              VALUES (?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY))`,
             [uniqueAuthToken, orderId, authorizedAmount, authorizationToken.substring(0, 20)]
         );
 
         // Commit transaction
-        await db.promise().commit();
+        await connection.commit();
+        
+        // Release connection back to pool
+        connection.release();
 
         res.json({ 
             success: true, 
@@ -112,7 +118,9 @@ app.post('/api/save-order', async (req, res) => {
 
     } catch (error) {
         // Rollback on error
-        await db.promise().rollback();
+        await connection.rollback();
+        // Release connection back to pool
+        connection.release();
         console.error('Error saving order:', error);
         console.error('Error details:', error.message);
         console.error('SQL Error Code:', error.code);
