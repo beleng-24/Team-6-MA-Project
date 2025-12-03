@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KSUS Shop</title>
+<link rel="stylesheet" href="universal-styles.css" />
+<style>
+  body { background: var(--background); margin: 0; padding: 0; font-family: inherit; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    padding: 22px 32px;
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  header img { width: 64px; height: 64px; object-fit: contain; cursor:pointer; }
+  .title-group { display: flex; flex-direction: column; }
+  .title { font-size: 1.9rem; font-weight: 800; color: var(--text); }
+  .subtitle { margin-top: -6px; color: var(--text-subtle); font-size: 1rem; }
+
+  #cart-preview-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 800;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+  #cart-preview-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+  #cart-count { background: white; padding: 3px 8px; border-radius: 8px; font-size: 1rem; }
+
+  .container { width: min(1200px, 90%); margin: 40px auto; }
+  h2 { font-size: 2rem; margin-bottom: 24px; color: var(--text); }
+
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 32px;
+  }
+
+  .item {
+    background: var(--panel);
+    padding: 24px;
+    border-radius: 18px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    text-align: center;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 1;
+  }
+  .item.hidden { opacity: 0; transform: scale(0.95); pointer-events: none; }
+  .item:hover { transform: translateY(-6px); box-shadow: 0 6px 20px rgba(0,0,0,0.22); }
+  .item img { width: 220px; height: 220px; object-fit: contain; border-radius: 12px; }
+  .price { margin: 12px 0 18px; font-size: 1.2rem; font-weight: bold; color: var(--accent); }
+
+  .cart-button, .preview-button {
+    padding: 12px 18px;
+    background: var(--accent);
+    color: black;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    margin-bottom: 6px;
+    transition: 0.2s ease;
+  }
+  .cart-button:hover, .preview-button:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.23); }
+
+  /* Preview Modal */
+  #previewModal {
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.7); justify-content:center; align-items:center;
+    z-index:200;
+    touch-action: none;
+  }
+  #previewContent {
+    position:relative; background:var(--panel); padding:20px; border-radius:12px;
+    max-width:90%; max-height:90%; display:flex; flex-direction:column; align-items:center;
+  }
+  .zoom-container {
+    position:relative;
+    overflow:hidden;
+    border-radius:12px;
+  }
+  .zoom-img {
+    transition: transform 0.25s ease;
+    cursor: default !important;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* ⭐ FIXED CLOSE BUTTON — ALWAYS VISIBLE ⭐ */
+  #previewClose {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    cursor: pointer;
+    font-size: 2rem;
+    font-weight: 900;
+
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.65);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 12px;
+    backdrop-filter: blur(6px);
+
+    box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  }
+  #previewClose:hover {
+    background: rgba(0,0,0,0.85);
+  }
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex; align-items:center; gap:16px;">
+    <img src="KSUS Logo.png" alt="KSUS Logo" onclick="window.location.reload()" />
+    <div class="title-group">
+      <div class="title">KSUS STORE</div>
+      <div class="subtitle">Official Merchandise • Apparel • Books</div>
+    </div>
+  </div>
+  <a id="cart-preview-btn" href="#">🛒 Cart <span id="cart-count">0</span></a>
+</header>
+
+<div id="cartPreviewDropdown" style="display:none; position:absolute; right:32px; top:96px; background:var(--panel); padding:16px; width:300px; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:100;">
+  <div id="cartPreviewItems" style="display:flex; flex-direction:column; gap:10px;"></div>
+  <div style="font-weight:700; text-align:right; margin-top:10px;">Total: $<span id="cartTotal">0.00</span></div>
+  <a href="cart.html" style="margin-top:12px; display:block; text-align:center; background:var(--accent); padding:10px; border-radius:8px; font-weight:700; color:black; text-decoration:none;">Go to Cart</a>
+</div>
+
+<div class="container">
+  <h2>Shop Official KSUS Merchandise</h2>
+  <div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+    <input id="searchBar" type="text" placeholder="Search products…" style="flex:1; padding:12px 14px; border-radius:10px; border:1px solid var(--border-subtle); background:var(--panel); color:var(--text); font-size:1rem;">
+    <select id="filterSelect" style="padding:12px 14px; border-radius:10px; border:1px solid var(--border-subtle); background:var(--panel); color:var(--text); font-size:1rem;">
+      <option value="all">All Categories</option>
+      <option value="apparel">Apparel</option>
+      <option value="accessories">Accessories</option>
+      <option value="supplies">Supplies</option>
+    </select>
+  </div>
+
+  <div class="products" id="productGrid">
+
+    <div class="item" data-category="apparel">
+      <img src="tshirt.png" alt="KSUS T-Shirt" />
+      <h3>KSUS T-Shirt</h3>
+      <div class="price">$20.00</div>
+      <button class="preview-button" onclick="previewItem('tshirt.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS T-Shirt',20,'tshirt.png')">Add to Cart</button>
+    </div>
+
+    <div class="item" data-category="apparel">
+      <img src="sweatpants.png" alt="KSUS Sweatpants" />
+      <h3>KSUS Sweatpants</h3>
+      <div class="price">$35.00</div>
+      <button class="preview-button" onclick="previewItem('sweatpants.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS Sweatpants',35,'sweatpants.png')">Add to Cart</button>
+    </div>
+
+    <div class="item" data-category="supplies">
+      <img src="book.png" alt="KSUS Study Guide Book" />
+      <h3>KSUS Study Guide Book</h3>
+      <div class="price">$18.00</div>
+      <button class="preview-button" onclick="previewItem('book.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS Study Guide Book',18,'book.png')">Add to Cart</button>
+    </div>
+
+    <div class="item" data-category="apparel">
+      <img src="hoodie.png" alt="KSUS Hoodie" />
+      <h3>KSUS Hoodie</h3>
+      <div class="price">$42.00</div>
+      <button class="preview-button" onclick="previewItem('hoodie.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS Hoodie',42,'hoodie.png')">Add to Cart</button>
+    </div>
+
+    <div class="item" data-category="accessories">
+      <img src="mug.png" alt="KSUS Coffee Mug" />
+      <h3>KSUS Coffee Mug</h3>
+      <div class="price">$12.00</div>
+      <button class="preview-button" onclick="previewItem('mug.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS Coffee Mug',12,'mug.png')">Add to Cart</button>
+    </div>
+
+    <div class="item" data-category="accessories">
+      <img src="lanyard.png" alt="KSUS Lanyard" />
+      <h3>KSUS Lanyard</h3>
+      <div class="price">$6.00</div>
+      <button class="preview-button" onclick="previewItem('lanyard.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS Lanyard',6,'lanyard.png')">Add to Cart</button>
+    </div>
+
+    <div class="item" data-category="accessories">
+      <img src="stickerpack.png" alt="KSUS Sticker Pack" />
+      <h3>KSUS Sticker Pack</h3>
+      <div class="price">$8.00</div>
+      <button class="preview-button" onclick="previewItem('stickerpack.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS Sticker Pack',8,'stickerpack.png')">Add to Cart</button>
+    </div>
+
+    <div class="item" data-category="accessories">
+      <img src="waterbottle.png" alt="KSUS Water Bottle" />
+      <h3>KSUS Water Bottle</h3>
+      <div class="price">$16.00</div>
+      <button class="preview-button" onclick="previewItem('waterbottle.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS Water Bottle',16,'waterbottle.png')">Add to Cart</button>
+    </div>
+
+    <div class="item" data-category="supplies">
+      <img src="pens.png" alt="KSUS Pen Set" />
+      <h3>KSUS Pen Set</h3>
+      <div class="price">$5.00</div>
+      <button class="preview-button" onclick="previewItem('pens.png')">Preview</button>
+      <button class="cart-button" onclick="addToCart('KSUS Pen Set',5,'pens.png')">Add to Cart</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal">
+  <div id="previewContent">
+    <span id="previewClose" onclick="closePreview()">&times;</span>
+
+    <div class="zoom-container">
+      <img id="previewImg" class="zoom-img" src="" alt="Preview" style="max-width:70vw; max-height:70vh; object-fit:contain;">
+    </div>
+
+    <div id="zoomControls" style="position:absolute; bottom:20px; right:20px; display:flex; flex-direction:column; gap:10px; z-index:300;">
+      <button id="zoomInBtn" style="padding:10px 14px; background:var(--accent); border:none; border-radius:8px; font-size:20px; font-weight:700; cursor:pointer;">+</button>
+      <button id="zoomOutBtn" style="padding:10px 14px; background:var(--accent); border:none; border-radius:8px; font-size:20px; font-weight:700; cursor:pointer;">−</button>
+      <button id="zoomResetBtn" style="padding:10px 14px; background:var(--panel); border:none; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer;">Reset</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ================= CART PREVIEW DROPDOWN =================
+const previewBtn = document.getElementById('cart-preview-btn');
+const previewBox = document.getElementById('cartPreviewDropdown');
+previewBtn.addEventListener('click', e => {
+  e.preventDefault();
+  previewBox.style.display = previewBox.style.display === 'none' ? 'block' : 'none';
+  loadPreview();
+});
+
+function loadPreview() {
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const box = document.getElementById('cartPreviewItems');
+  const totalSpan = document.getElementById('cartTotal');
+  box.innerHTML = '';
+  let total = 0;
+
+  if (cart.length === 0) {
+    box.innerHTML = '<div style="text-align:center; color:var(--text-subtle);">Cart is empty</div>';
+    totalSpan.textContent = '0.00';
+    return;
+  }
+
+  cart.forEach((item,index) => {
+    total += item.price*item.qty;
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.alignItems='center'; row.style.gap='10px';
+    row.innerHTML = `
+      <img src="${item.img}" style="width:40px; height:40px; object-fit:contain; border-radius:6px;">
+      <div style="flex:1;">
+        <div style="font-weight:600;">${item.name}</div>
+        <div style="display:flex; align-items:center; gap:5px; font-size:0.9rem; color:var(--text-subtle);">
+          <button onclick="changeQty(${index},-1)">-</button>
+          ${item.qty}
+          <button onclick="changeQty(${index},1)">+</button>
+        </div>
+      </div>
+      <div style="font-weight:700;">$${(item.price*item.qty).toFixed(2)}</div>
+      <button onclick="removeItem(${index})" style="margin-left:5px;">&times;</button>
+    `;
+    box.appendChild(row);
+  });
+  totalSpan.textContent = total.toFixed(2);
+}
+
+function addToCart(name,price,img){
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const existing = cart.find(i=>i.name===name);
+  if(existing){existing.qty+=1;} else{cart.push({name,price,qty:1,img});}
+  localStorage.setItem('cart',JSON.stringify(cart));
+  updateCartCount();
+}
+
+function updateCartCount(){
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  document.getElementById('cart-count').textContent = cart.reduce((sum,i)=>sum+i.qty,0);
+}
+updateCartCount();
+
+function changeQty(index,delta){
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  cart[index].qty += delta;
+  if(cart[index].qty<1) cart[index].qty=1;
+  localStorage.setItem('cart',JSON.stringify(cart));
+  loadPreview(); updateCartCount();
+}
+function removeItem(index){
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  cart.splice(index,1);
+  localStorage.setItem('cart',JSON.stringify(cart));
+  loadPreview(); updateCartCount();
+}
+
+// ================= FILTER + SEARCH =================
+const filterSelect=document.getElementById('filterSelect');
+const searchBar=document.getElementById('searchBar');
+const productGrid=document.getElementById('productGrid');
+const products=Array.from(productGrid.getElementsByClassName('item'));
+filterSelect.addEventListener('change',filterProducts);
+searchBar.addEventListener('input',filterProducts);
+function filterProducts(){
+  const cat=filterSelect.value.toLowerCase();
+  const term=searchBar.value.toLowerCase();
+  products.forEach(p=>{
+    const pc=p.dataset.category.toLowerCase();
+    const pn=p.querySelector('h3').textContent.toLowerCase();
+    if((cat==='all'||pc===cat)&&pn.includes(term)){p.classList.remove('hidden'); productGrid.prepend(p);} else{p.classList.add('hidden');}
+  });
+}
+
+// ================= PREVIEW MODAL =================
+const previewModal=document.getElementById('previewModal');
+const previewImg=document.getElementById('previewImg');
+function previewItem(src){previewImg.src=src; previewModal.style.display='flex';}
+function closePreview(){
+  previewModal.style.display='none';
+  zoomScale = 1;
+  imgX = 0;
+  imgY = 0;
+  previewImg.style.transform = "scale(1) translate(0px,0px)";
+}
+
+// ================= DISABLE DOUBLE-CLICK ZOOM =================
+previewImg.addEventListener("dblclick", e => { e.preventDefault(); return false; });
+
+// ================= ZOOM + DRAG =================
+let zoomScale = 1;
+let isDragging = false;
+let startX, startY, imgX = 0, imgY = 0;
+
+previewImg.addEventListener("wheel", e => {
+  e.preventDefault();
+  zoomScale += e.deltaY * -0.001;
+  zoomScale = Math.min(Math.max(1, zoomScale), 5);
+  previewImg.style.transform = `scale(${zoomScale}) translate(${imgX}px, ${imgY}px)`;
+});
+
+previewImg.addEventListener("mousedown", e => {
+  if (zoomScale === 1) return;
+  isDragging = true;
+  startX = e.clientX - imgX;
+  startY = e.clientY - imgY;
+  previewImg.style.cursor = "default";
+});
+
+window.addEventListener("mousemove", e => {
+  if (!isDragging) return;
+  imgX = e.clientX - startX;
+  imgY = e.clientY - startY;
+  previewImg.style.transform = `scale(${zoomScale}) translate(${imgX}px, ${imgY}px)`;
+});
+
+window.addEventListener("mouseup", () => {
+  isDragging = false;
+  previewImg.style.cursor = "default";
+});
+
+// ================= ZOOM BUTTONS =================
+const zoomInBtn = document.getElementById("zoomInBtn");
+const zoomOutBtn = document.getElementById("zoomOutBtn");
+const zoomResetBtn = document.getElementById("zoomResetBtn");
+
+zoomInBtn.addEventListener("click", () => {
+  zoomScale = Math.min(zoomScale + 0.3, 5);
+  previewImg.style.transform = `scale(${zoomScale}) translate(${imgX}px, ${imgY}px)`;
+});
+
+zoomOutBtn.addEventListener("click", () => {
+  zoomScale = Math.max(zoomScale - 0.3, 1);
+  if (zoomScale === 1) { imgX = 0; imgY = 0; }
+  previewImg.style.transform = `scale(${zoomScale}) translate(${imgX}px, ${imgY}px)`;
+});
+
+zoomResetBtn.addEventListener("click", () => {
+  zoomScale = 1;
+  imgX = 0;
+  imgY = 0;
+  previewImg.style.transform = "scale(1) translate(0px,0px)";
+});
+
+// ================= MOBILE PINCH =================
+let lastTouchDistance = 0;
+let lastTouchMidpoint = null;
+
+function getTouchDistance(t){
+  const dx = t[0].clientX - t[1].clientX;
+  const dy = t[0].clientY - t[1].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+function getTouchMidpoint(t){
+  return {
+    x: (t[0].clientX + t[1].clientX) / 2,
+    y: (t[0].clientY + t[1].clientY) / 2
+  };
+}
+
+previewImg.addEventListener("touchstart", e => {
+  if (e.touches.length === 2) {
+    lastTouchDistance = getTouchDistance(e.touches);
+    lastTouchMidpoint = getTouchMidpoint(e.touches);
+  }
+}, { passive:false });
+
+previewImg.addEventListener("touchmove", e => {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    const newDist = getTouchDistance(e.touches);
+    const scaleChange = newDist / lastTouchDistance;
+    zoomScale = Math.min(Math.max(zoomScale * scaleChange, 1), 5);
+
+    const newMid = getTouchMidpoint(e.touches);
+    imgX += (newMid.x - lastTouchMidpoint.x) / 4;
+    imgY += (newMid.y - lastTouchMidpoint.y) / 4;
+
+    previewImg.style.transform = `scale(${zoomScale}) translate(${imgX}px, ${imgY}px)`;
+
+    lastTouchDistance = newDist;
+    lastTouchMidpoint = newMid;
+  }
+}, { passive:false });
+
+previewImg.addEventListener("touchend", () => {
+  if (zoomScale === 1) {
+    imgX = 0;
+    imgY = 0;
+    previewImg.style.transform = "scale(1) translate(0px,0px)";
+  }
+});
+</script>
+</body>
+</html>

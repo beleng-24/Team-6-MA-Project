@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KSUS Cart</title>
+<link rel="stylesheet" href="universal-styles.css" />
+<style>
+  body { background: var(--background); margin: 0; padding: 0; font-family: inherit; }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    padding: 22px 32px;
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  header img { width: 64px; height: 64px; object-fit: contain; }
+  .title-group { display: flex; flex-direction: column; }
+  .title { font-size: 1.9rem; font-weight: 800; color: var(--text); }
+  .subtitle { margin-top: -6px; color: var(--text-subtle); font-size: 1rem; }
+
+  #cart-preview-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 800;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+  #cart-preview-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+  #cart-count { background: white; padding: 3px 8px; border-radius: 8px; font-size: 1rem; }
+
+  .container { width: min(1200px, 90%); margin: 40px auto; }
+  h2 { font-size: 2rem; margin-bottom: 24px; color: var(--text); }
+
+  .cart-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--panel);
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .cart-item img { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
+  .cart-item-details { flex: 1; }
+  .cart-item-details h3 { margin: 0; font-weight: 600; color: var(--text); }
+  .cart-item-details p { margin: 4px 0; color: var(--text-subtle); }
+
+  .cart-item-actions { display: flex; gap: 8px; align-items: center; }
+  .cart-item-actions button {
+    padding: 4px 10px;
+    font-weight: 700;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: var(--accent);
+    color: black;
+    transition: 0.2s ease;
+  }
+  .cart-item-actions button:hover { transform: translateY(-2px); box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+
+  .cart-item-price { font-weight: 700; font-size: 1.2rem; color: var(--accent); }
+
+  /* Back to Shop Button */
+  #back-to-shop {
+    display: inline-block;
+    margin: 16px;
+    padding: 10px 16px;
+    background: var(--accent);
+    color: black;
+    font-weight: 700;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.2s ease;
+  }
+  #back-to-shop:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+  /* Cart Total Section */
+  #cart-total {
+    margin-top: 24px;
+    text-align: right;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex; align-items:center; gap:16px;">
+    <img src="KSUS Logo.png" alt="KSUS Logo" />
+    <div class="title-group">
+      <div class="title">KSUS STORE</div>
+      <div class="subtitle">Official Merchandise • Apparel • Books</div>
+    </div>
+  </div>
+
+  <a id="cart-preview-btn" href="cart.html">
+    🛒 Cart <span id="cart-count">0</span>
+  </a>
+</header>
+
+<a id="back-to-shop" href="shop.html">← Back to Shop</a>
+
+<div class="container">
+  <h2>Your Cart</h2>
+  <div id="cartItems"></div>
+  <div id="cart-total">Total: $0.00</div>
+  <div style="text-align:right; margin-top:16px;">
+  <a href="Vanilla Checkout.html"
+     style="
+       background: var(--accent);
+       color: black;
+       padding: 12px 22px;
+       border-radius: 10px;
+       font-weight: 800;
+       text-decoration: none;
+       display: inline-block;
+       transition: 0.2s ease;
+     ">
+     Proceed to Checkout →
+  </a>
+</div>
+
+</div>
+
+<script>
+// Load cart items
+function loadCart() {
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const container = document.getElementById('cartItems');
+  const totalDiv = document.getElementById('cart-total');
+  container.innerHTML = '';
+
+  if (cart.length === 0) {
+    container.innerHTML = '<p style="color: var(--text-subtle); text-align:center;">Your cart is empty</p>';
+    totalDiv.textContent = 'Total: $0.00';
+    return;
+  }
+
+  let total = 0;
+
+  cart.forEach((item, index) => {
+    total += item.price * item.qty;
+
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <img src="${item.img || 'placeholder.png'}" alt="${item.name}">
+      <div class="cart-item-details">
+        <h3>${item.name}</h3>
+        <p>Price: $${item.price.toFixed(2)}</p>
+        <div class="cart-item-actions">
+          <button class="decrease">−</button>
+          <span>Qty: ${item.qty}</span>
+          <button class="increase">+</button>
+          <button class="remove">Remove</button>
+        </div>
+      </div>
+      <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+    `;
+    container.appendChild(div);
+
+    // Action buttons
+    const increaseBtn = div.querySelector('.increase');
+    const decreaseBtn = div.querySelector('.decrease');
+    const removeBtn = div.querySelector('.remove');
+    const qtySpan = div.querySelector('.cart-item-actions span');
+
+    increaseBtn.addEventListener('click', () => {
+      item.qty += 1;
+      localStorage.setItem('cart', JSON.stringify(cart));
+      qtySpan.textContent = `Qty: ${item.qty}`;
+      updateCartCount();
+      loadCart();
+    });
+
+    decreaseBtn.addEventListener('click', () => {
+      if (item.qty > 1) {
+        item.qty -= 1;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        qtySpan.textContent = `Qty: ${item.qty}`;
+        updateCartCount();
+        loadCart();
+      }
+    });
+
+    removeBtn.addEventListener('click', () => {
+      cart.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartCount();
+      loadCart();
+    });
+  });
+
+  totalDiv.textContent = 'Total: $' + total.toFixed(2);
+}
+
+// Update cart count in header
+function updateCartCount() {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+  document.getElementById("cart-count").textContent = totalQty;
+}
+
+updateCartCount();
+loadCart();
+</script>
+
+</body>
+</html>
