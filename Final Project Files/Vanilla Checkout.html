@@ -44,17 +44,39 @@
       font-size: 13px;
       color: var(--text-muted, #94a3b8);
     }
+
+    /* Sticky Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      background: var(--panel);
+      padding: 22px 32px;
+      border-bottom: 1px solid var(--border-subtle);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    header img { width: 64px; height: 64px; object-fit: contain; cursor: pointer; }
+    .title-group { display: flex; flex-direction: column; }
+    .title { font-size: 1.9rem; font-weight: 800; color: var(--text); }
+    .subtitle { margin-top: -6px; color: var(--text-subtle); font-size: 1rem; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div style="display: flex; align-items: center; margin-bottom: 20px; position: relative;">
-      <div style="display: flex; align-items: center; gap: 15px; margin-right: auto;">
-        <img src="KSUS Logo.png" alt="KSUS Logo" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
-        <h1 class="ksus-logo" style="margin: 0;">KSUS Store</h1>
-      </div>
-      <h2 style="position: absolute; left: 50%; transform: translateX(-50%); margin: 0; color: #000; font-size: 24px; font-weight: 500;">Checkout</h2>
+  <header>
+    <img src="KSUS Logo.png" alt="KSUS Logo" onclick="window.location.href='simple-index.html'" />
+    <div class="title-group">
+      <div class="title">KSUS STORE</div>
+      <div class="subtitle">Official Merchandise • Apparel • Books</div>
     </div>
+  </header>
+
+  <h1 style="text-align: center; margin: 40px 0 20px; font-size: 2.5rem; color: var(--text);">Checkout</h1>
+
+  <div class="wrap">
 
 
     <div class="grid">
